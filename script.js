@@ -30,23 +30,26 @@ const tr = new Konva.Transformer({
 	enabledAnchors: ['top-left', 'top-right', 'bottom-left', 'bottom-right']
 });
 tr.on('transform', () => {
-	if (selectedGear) {
-		const img = selectedGear.findOne('.icon');
-		const text = selectedGear.findOne('Text');
+	if (selectedGears.length > 0) {
+		for (let i = 0; i < selectedGears.length; i++) {
+			const gear = selectedGears[i];
+			const img = gear.findOne('.icon');
+			const text = gear.findOne('Text');
 
-		const newWidth = img.width() * img.scaleX();
-		const newHeight = img.height() * img.scaleY();
+			const newWidth = img.width() * img.scaleX();
+			const newHeight = img.height() * img.scaleY();
 
-		document.getElementById('prop-size-cm').value = (newWidth / PX_PER_CM).toFixed(1);
+			document.getElementById('prop-size-cm').value = (newWidth / PX_PER_CM).toFixed(1);
 
-		img.width(newWidth);
-		img.height(newHeight);
-		img.scaleX(1);
-		img.scaleY(1);
+			img.width(newWidth);
+			img.height(newHeight);
+			img.scaleX(1);
+			img.scaleY(1);
 
-		text.width(newWidth);
-		text.y(newHeight + 5);
-		updateIO();
+			text.width(newWidth);
+			text.y(newHeight + 5);
+			updateIO();
+		}
 	}
 	updateAllCables();
 });
@@ -355,7 +358,8 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", outCount
 }
 
 function createSingleAnchor(group, x, y, color, id) {
-	const size = group.findOne('.icon').width();
+	const width = group.findOne('.icon').width();
+	const height = group.findOne('.icon').height();
 	const c = new Konva.Circle({
 		x: x, y: y, radius: 8, fill: color, opacity: 0,
 		draggable: true,
@@ -377,17 +381,24 @@ function createSingleAnchor(group, x, y, color, id) {
 
 	c.on('dragmove', (e) => {
 		e.cancelBubble = true;
+
 		let cx = c.x();
 		let cy = c.y();
-		const mid = size / 2;
 
-		if (Math.abs(cx - mid) > Math.abs(cy - mid)) {
-			c.x(cx > mid ? size : 0);
-			c.y(Math.max(0, Math.min(size, cy)));
+		const midX = width / 2;
+		const midY = height / 2;
+
+		const dx = (cx - midX) / width;
+		const dy = (cy - midY) / height;
+
+		if (Math.abs(dx) > Math.abs(dy)) {
+			c.x(dx > 0 ? width : 0);
+			c.y(Math.max(0, Math.min(height, cy)));
 		} else {
-			c.y(cy > mid ? size : 0);
-			c.x(Math.max(0, Math.min(size, cx)));
+			c.y(dy > 0 ? height : 0);
+			c.x(Math.max(0, Math.min(width, cx)));
 		}
+
 		updateAllCables();
 	});
 
@@ -446,11 +457,13 @@ function selectGear(group, isMultiSelect = false) {
 }
 
 document.getElementById('prop-size-cm').oninput = (e) => {
-	if (selectedGear) {
+	if (selectedGears.length > 1) return;
+	if (selectedGears.length === 1) {
+		const gear = selectedGears[0];
 		const val = parseFloat(e.target.value) * PX_PER_CM;
 		if (val > 10) {
-			const img = selectedGear.findOne('.icon');
-			const text = selectedGear.findOne('Text');
+			const img = gear.findOne('.icon');
+			const text = gear.findOne('Text');
 			const ratio = img.height() / img.width();
 			img.width(val);
 			img.height(val * ratio);
@@ -497,26 +510,39 @@ function deselectAll() {
 }
 
 // --- PROPRIETES INPUTS ---
-document.getElementById('prop-label').oninput = (e) => { if (selectedGear) { const t = selectedGear.findOne('Text'); t.text(e.target.value); t.visible(e.target.value !== ""); mainLayer.batchDraw(); saveHistory(); } };
+document.getElementById('prop-label').oninput = (e) => {
+	if (selectedGears.length === 1) {
+		const gear = selectedGears[0];
+		const t = gear.findOne('Text');
+		t.text(e.target.value);
+		t.visible(e.target.value !== "");
+		mainLayer.batchDraw();
+		saveHistory();
+	}
+};
 document.getElementById('prop-in').onchange = () => updateIO();
 document.getElementById('prop-out').onchange = () => updateIO();
 function updateIO() {
-	if (!selectedGear) return;
-	const width = selectedGear.findOne('.icon').width();
-	const height = selectedGear.findOne('.icon').height();
-	selectedGear.find('.anchor').forEach(a => a.destroy());
+	if (selectedGears.length !== 1) return;
+	const gear = selectedGears[0];
 
-	const outCount = document.getElementById('prop-out').value;
-	const inCount = document.getElementById('prop-in').value;
-	const total = parseInt(outCount) + parseInt(inCount);
+	const img = gear.findOne('.icon');
+	const width = img.width();
+	const height = img.height();
+
+	gear.find('.anchor').forEach(a => a.destroy());
+
+	const outCount = parseInt(document.getElementById('prop-out').value);
+	const inCount = parseInt(document.getElementById('prop-in').value);
+	const total = outCount + inCount;
 
 	for (let i = 0; i < outCount; i++) {
 		const pos = getRectPos(i, total, width, height);
-		createSingleAnchor(selectedGear, pos.x, pos.y, '#e74c3c', selectedGear.id() + '-out' + i);
+		createSingleAnchor(gear, pos.x, pos.y, '#e74c3c', gear.id() + '-out' + i);
 	}
 	for (let i = 0; i < inCount; i++) {
-		const pos = getRectPos(i + parseInt(outCount), total, width, height);
-		createSingleAnchor(selectedGear, pos.x, pos.y, '#3498db', selectedGear.id() + '-in' + i);
+		const pos = getRectPos(i + outCount, total, width, height);
+		createSingleAnchor(gear, pos.x, pos.y, '#3498db', gear.id() + '-in' + i);
 	}
 	updateAllCables();
 	saveHistory();
@@ -843,26 +869,23 @@ function getOrthoPoints(points) {
 	return ortho;
 }
 
-function getRectPos(index, total, width = 80, height = 80) {
+function getRectPos(index, total, width, height) {
+	console.log(index, total, width, height);
 	const perimeter = (width + height) * 2;
 	const step = perimeter / total;
 
-	// Starting point offset (optional: adjusts where the first anchor appears)
-	const dist = (index * step + (width + height) * 3.25) % perimeter;
+	// middle of the bottom side
+	const dist = (index * step + height + width * 1.5) % perimeter;
 
-	// Top edge
 	if (dist <= width) {
 		return { x: dist, y: 0 };
 	}
-	// Right edge
 	if (dist <= width + height) {
-		return { x: width, y: dist - width };
+		return { x: width, y: dist - height };
 	}
-	// Bottom edge
 	if (dist <= width * 2 + height) {
 		return { x: width - (dist - (width + height)), y: height };
 	}
-	// Left edge
 	return { x: 0, y: height - (dist - (width * 2 + height)) };
 }
 
@@ -882,13 +905,13 @@ centerStage();
 window.addEventListener('keydown', (e) => {
 	if (e.ctrlKey && e.key === 'c') {
 		if (selectedGears.length > 0) {
-			clipboard = Array.from(selectedGears).map(selectedGear => ({
-				src: selectedGear.findOne('.icon').image().src,
-				label: selectedGear.findOne('Text').text(),
-				outCount: selectedGear.find('.anchor').filter(a => a.fill() === '#e74c3c').length,
-				inCount: selectedGear.find('.anchor').filter(a => a.fill() === '#3498db').length,
-				width: selectedGear.findOne('.icon').getClientRect().width,
-				height: selectedGear.findOne('.icon').getClientRect().height
+			clipboard = Array.from(selectedGears).map(gear => ({
+				src: gear.findOne('.icon').image().src,
+				label: gear.findOne('Text').text(),
+				outCount: gear.find('.anchor').filter(a => a.fill() === '#e74c3c').length,
+				inCount: gear.find('.anchor').filter(a => a.fill() === '#3498db').length,
+				width: gear.findOne('.icon').getClientRect().width,
+				height: gear.findOne('.icon').getClientRect().height
 			}));
 		}
 	}
@@ -907,13 +930,13 @@ window.addEventListener('keydown', (e) => {
 
 	if (e.ctrlKey && e.key === 'x') {
 		if (selectedGears.length > 0) {
-			clipboard = Array.from(selectedGears).map(selectedGear => ({
-				src: selectedGear.findOne('.icon').image().src,
-				label: selectedGear.findOne('Text').text(),
-				outCount: selectedGear.find('.anchor').filter(a => a.fill() === '#e74c3c').length,
-				inCount: selectedGear.find('.anchor').filter(a => a.fill() === '#3498db').length,
-				width: selectedGear.findOne('.icon').getClientRect().width,
-				height: selectedGear.findOne('.icon').getClientRect().height
+			clipboard = Array.from(selectedGears).map(gear => ({
+				src: gear.findOne('.icon').image().src,
+				label: gear.findOne('Text').text(),
+				outCount: gear.find('.anchor').filter(a => a.fill() === '#e74c3c').length,
+				inCount: gear.find('.anchor').filter(a => a.fill() === '#3498db').length,
+				width: gear.findOne('.icon').getClientRect().width,
+				height: gear.findOne('.icon').getClientRect().height
 			}));
 			executeDelete();
 			selectedGears = [];

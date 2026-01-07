@@ -256,7 +256,7 @@ function updateCanvasSize() {
 
 document.getElementById('canvas-bg-color').oninput = (e) => {
 	canvasBackgroundColor = e.target.value;
-    drawGrid();
+	drawGrid();
 };
 document.getElementById('canvas-width-cm').onchange = updateCanvasSize;
 document.getElementById('canvas-height-cm').onchange = updateCanvasSize;
@@ -394,7 +394,8 @@ function createSingleAnchor(group, x, y, color, id) {
 	c.on('mousedown touchstart', (e) => {
 		e.cancelBubble = true;
 
-		if (e.evt.button === 2) {
+		if (e.evt.button === 0 && (e.evt.ctrlKey || e.evt.metaKey)) {
+			// On stoppe le drag initié par Konva car on veut créer un lien
 			c.stopDrag();
 			activeAnchor = c;
 			showAllAnchors(true);
@@ -537,7 +538,9 @@ function selectCable(cableObj) {
 	selectedCable = cableObj;
 	cableObj.isSelected = true;
 	cableObj.line.strokeWidth(8);
-	cableObj.handlesGroup.visible(true);
+	if (cableObj.handlesGroup) {
+        cableObj.handlesGroup.visible(true);
+    }
 
 	canvasProps.style.display = 'none';
 	gearProps.style.display = 'none';
@@ -547,13 +550,19 @@ function selectCable(cableObj) {
 
 	document.getElementById('cable-label').value = cableObj.label ? cableObj.label.text() : "";
 	document.getElementById('cable-color-picker').value = cableObj.line.stroke();
-	cableLayer.draw();
+	cableLayer.draw();tempLayer.draw();
 }
 
 function deselectAll() {
 	tr.nodes([]);
 	selectedGears = [];
 	selectedCable = null;
+
+	cables.forEach(c => {
+        c.isSelected = false;
+        c.line.strokeWidth(4);
+        if (c.handlesGroup) c.handlesGroup.visible(false);
+    });
 
 	canvasProps.style.display = 'block';
 	gearProps.style.display = 'none';
@@ -562,6 +571,7 @@ function deselectAll() {
 	document.getElementById('prop-title').innerText = "Propriétés du Canevas";
 
 	cableLayer.draw();
+	tempLayer.draw();
 }
 
 // --- PROPRIETES INPUTS ---
@@ -635,8 +645,8 @@ function updateAllCables() { cables.forEach(c => c.redraw()); cableLayer.batchDr
 function showAllAnchors(v) { stage.find('.anchor').forEach(a => a.opacity(v ? 1 : 0)); mainLayer.draw(); }
 function showAnchorsOfGear(g, v) {
 	if (!v && activeAnchor) return;
-    g.find('.anchor').forEach(a => a.opacity(v ? 1 : 0));
-    mainLayer.draw();
+	g.find('.anchor').forEach(a => a.opacity(v ? 1 : 0));
+	mainLayer.draw();
 }
 
 stage.on('mousemove touchmove', () => {
@@ -832,6 +842,12 @@ if (typeof SVG_LIBRARY !== 'undefined') {
 		title.innerText = catName;
 		const grid = document.createElement('div');
 		grid.className = 'bank-grid';
+
+		title.onclick = () => {
+			title.classList.toggle('collapsed');
+			grid.classList.toggle('collapsed');
+		};
+
 		cats[catName].forEach(f => {
 			const item = document.createElement('div');
 			item.className = 'bank-item';
@@ -1109,6 +1125,21 @@ function createVirtualAnchor(group, x, y) {
 }
 
 function toggleGrid(visible) {
-    showGrid = visible;
-    drawGrid(); // On redessine pour appliquer le changement
+	showGrid = visible;
+	drawGrid(); // On redessine pour appliquer le changement
+}
+
+function setAllCategories(collapse) {
+	const titles = document.querySelectorAll('.category-title');
+	const grids = document.querySelectorAll('.bank-grid');
+
+	titles.forEach(t => {
+		if (collapse) t.classList.add('collapsed');
+		else t.classList.remove('collapsed');
+	});
+
+	grids.forEach(g => {
+		if (collapse) g.classList.add('collapsed');
+		else g.classList.remove('collapsed');
+	});
 }

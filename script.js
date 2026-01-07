@@ -1,5 +1,5 @@
 let isOrtho = false;
-let selectedGear = null;
+let selectedGears = [];
 let selectedCable = null;
 let cables = [];
 let activeAnchor = null;
@@ -161,18 +161,22 @@ document.getElementById('canvas-width-cm').onchange = updateCanvasSize;
 document.getElementById('canvas-height-cm').onchange = updateCanvasSize;
 
 function executeDelete() {
-	if (selectedGear) {
-		cables = cables.filter(c => {
-			if (c.fromId.startsWith(selectedGear.id()) || c.toId.startsWith(selectedGear.id())) {
-				const otherId = c.fromId.startsWith(selectedGear.id()) ? c.toId : c.fromId;
-				const otherAnchor = stage.findOne('#' + otherId);
-				if (otherAnchor) otherAnchor.fill(otherAnchor.oldColor);
-
-				c.line.destroy(); c.handlesGroup.destroy(); if (c.label) c.label.destroy(); return false;
-			}
-			return true;
+	if (selectedGears.length > 0) {
+		selectedGears.forEach(gear => {
+			cables = cables.filter(c => {
+				if (c.fromId.startsWith(gear.id()) || c.toId.startsWith(gear.id())) {
+					const otherId = c.fromId.startsWith(gear.id()) ? c.toId : c.fromId;
+					const otherAnchor = stage.findOne('#' + otherId);
+					if (otherAnchor) otherAnchor.fill(otherAnchor.oldColor);
+					c.line.destroy();
+					c.handlesGroup.destroy();
+					if (c.label) c.label.destroy();
+					return false;
+				}
+				return true;
+			});
+			gear.destroy();
 		});
-		selectedGear.destroy();
 	} else if (selectedCable) {
 		const sn = stage.findOne('#' + selectedCable.fromId);
 		const en = stage.findOne('#' + selectedCable.toId);
@@ -205,7 +209,7 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", outCount
 		});
 
 		const finalWidth = width || 80;
-        const finalHeight = height || 80;
+		const finalHeight = height || 80;
 		const img = new Konva.Image({
 			image: nativeImg,
 			width: finalWidth,
@@ -236,7 +240,11 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", outCount
 
 		group.on('mouseenter', () => showAnchorsOfGear(group, true));
 		group.on('mouseleave', () => { if (!activeAnchor) showAnchorsOfGear(group, false) });
-		group.on('click tap', (e) => { e.cancelBubble = true; selectGear(group); });
+		group.on('click tap', (e) => {
+			e.cancelBubble = true;
+			const isMulti = e.evt.shiftKey || e.evt.ctrlKey;
+			selectGear(group, isMulti);
+		});
 
 		group.on('dragmove', () => {
 			group.position({
@@ -315,24 +323,37 @@ function generateDefaultAnchors(group, outCount, inCount) {
 }
 
 // --- SELECTION ---
-function selectGear(group) {
-	deselectAll();
-	selectedGear = group;
-	tr.nodes([group]);
+function selectGear(group, isMultiSelect = false) {
+	if (!isMultiSelect) {
+		deselectAll();
+		selectedGears = [group];
+	} else {
+		if (selectedGears.includes(group)) {
+			selectedGears = selectedGears.filter(g => g !== group);
+		} else {
+			selectedGears.push(group);
+		}
+	}
 
-	canvasProps.style.display = 'none';
-	gearProps.style.display = 'block';
-	cableProps.style.display = 'none';
-	selectionActions.style.display = 'block';
-	document.getElementById('prop-title').innerText = "Propriétés Élément";
+	tr.nodes(selectedGears);
 
-	const img = group.findOne('.icon');
-	document.getElementById('prop-label').value = group.findOne('Text').text();
-	document.getElementById('prop-size-cm').value = (img.width() / PX_PER_CM).toFixed(1);
+	if (selectedGears.length > 0) {
+		canvasProps.style.display = 'none';
+		gearProps.style.display = selectedGears.length === 1 ? 'block' : 'none'; // Cache les props si plusieurs
+		cableProps.style.display = 'none';
+		selectionActions.style.display = 'block';
+		document.getElementById('prop-title').innerText = selectedGears.length > 1
+		? `${selectedGears.length} Éléments sélectionnés`
+		: "Propriétés Élément";
 
-	const anchors = group.find('.anchor');
-	document.getElementById('prop-out').value = anchors.filter(a => a.fill() === '#e74c3c').length;
-	document.getElementById('prop-in').value = anchors.filter(a => a.fill() === '#3498db').length;
+		if (selectedGears.length === 1) {
+			const img = group.findOne('.icon');
+			document.getElementById('prop-label').value = group.findOne('Text').text();
+			document.getElementById('prop-size-cm').value = (img.width() / PX_PER_CM).toFixed(1);
+		}
+	} else {
+		deselectAll();
+	}
 }
 
 document.getElementById('prop-size-cm').oninput = (e) => {
@@ -374,11 +395,7 @@ function selectCable(cableObj) {
 
 function deselectAll() {
 	tr.nodes([]);
-	if (selectedCable) {
-		selectedCable.line.strokeWidth(4);
-		selectedCable.handlesGroup.visible(false);
-	}
-	selectedGear = null;
+	selectedGears = [];
 	selectedCable = null;
 
 	canvasProps.style.display = 'block';
@@ -738,26 +755,26 @@ function getOrthoPoints(points) {
 }
 
 function getRectPos(index, total, width = 80, height = 80) {
-    const perimeter = (width + height) * 2;
-    const step = perimeter / total;
-    
-    // Starting point offset (optional: adjusts where the first anchor appears)
-    const dist = (index * step) % perimeter;
+	const perimeter = (width + height) * 2;
+	const step = perimeter / total;
 
-    // Top edge
-    if (dist <= width) {
-        return { x: dist, y: 0 };
-    }
-    // Right edge
-    if (dist <= width + height) {
-        return { x: width, y: dist - width };
-    }
-    // Bottom edge
-    if (dist <= width * 2 + height) {
-        return { x: width - (dist - (width + height)), y: height };
-    }
-    // Left edge
-    return { x: 0, y: height - (dist - (width * 2 + height)) };
+	// Starting point offset (optional: adjusts where the first anchor appears)
+	const dist = (index * step) % perimeter;
+
+	// Top edge
+	if (dist <= width) {
+		return { x: dist, y: 0 };
+	}
+	// Right edge
+	if (dist <= width + height) {
+		return { x: width, y: dist - width };
+	}
+	// Bottom edge
+	if (dist <= width * 2 + height) {
+		return { x: width - (dist - (width + height)), y: height };
+	}
+	// Left edge
+	return { x: 0, y: height - (dist - (width * 2 + height)) };
 }
 
 function centerStage() {

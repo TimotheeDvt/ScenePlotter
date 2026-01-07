@@ -44,6 +44,7 @@ body {
     overflow-y: scroll;
     scrollbar-width: thin;
     scrollbar-color: #444 #252526;
+	scrollbar-gutter: stable;
 }
 
 #library-container::-webkit-scrollbar {

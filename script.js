@@ -367,26 +367,36 @@ function createSingleAnchor(group, x, y, color, id) {
 	});
 	c.oldColor = color;
 
+	c.on('contextmenu', (e) => {
+		e.evt.preventDefault(); // Empêche le menu de s'ouvrir sur l'ancre
+	});
+
 	c.on('mousedown touchstart', (e) => {
 		e.cancelBubble = true;
 
-		if (e.evt.button === 0) {
+		if (e.evt.button === 2) {
 			c.stopDrag();
 			activeAnchor = c;
 			showAllAnchors(true);
-		} else if (e.evt.button === 2) {
-			c.startDrag();
+		}
+	});
+
+	c.on('mouseup touchend', (e) => {
+		if (e.evt.button === 0) {
+			c.stopDrag(); // Force l'arrêt du drag au relâchement du clic droit
 		}
 	});
 
 	c.on('dragmove', (e) => {
 		e.cancelBubble = true;
+		const local_snap_size = SNAP_SIZE / 2;
 
-		let cx = c.x();
-		let cy = c.y();
+		let cx = Math.round(c.x() / local_snap_size) * local_snap_size;
+		let cy = Math.round(c.y() / local_snap_size) * local_snap_size;
 
 		const midX = width / 2;
 		const midY = height / 2;
+
 
 		const dx = (cx - midX) / width;
 		const dy = (cy - midY) / height;
@@ -450,6 +460,8 @@ function selectGear(group, isMultiSelect = false) {
 			const img = group.findOne('.icon');
 			document.getElementById('prop-label').value = group.findOne('Text').text();
 			document.getElementById('prop-size-cm').value = (img.width() / PX_PER_CM).toFixed(1);
+			document.getElementById('prop-in').value = group.find('.anchor').filter(a => a.fill() === '#3498db').length;
+			document.getElementById('prop-out').value = group.find('.anchor').filter(a => a.fill() === '#e74c3c').length;
 		}
 	} else {
 		deselectAll();
@@ -523,29 +535,30 @@ document.getElementById('prop-label').oninput = (e) => {
 document.getElementById('prop-in').onchange = () => updateIO();
 document.getElementById('prop-out').onchange = () => updateIO();
 function updateIO() {
-	if (selectedGears.length !== 1) return;
-	const gear = selectedGears[0];
+	if (selectedGears.length == 0) return;
+	for (let i = 0; i < selectedGears.length; i++) {
+		const gear = selectedGears[i];
+		const img = gear.findOne('.icon');
+		const width = img.width();
+		const height = img.height();
 
-	const img = gear.findOne('.icon');
-	const width = img.width();
-	const height = img.height();
+		gear.find('.anchor').forEach(a => a.destroy());
 
-	gear.find('.anchor').forEach(a => a.destroy());
+		const outCount = parseInt(document.getElementById('prop-out').value);
+		const inCount = parseInt(document.getElementById('prop-in').value);
+		const total = outCount + inCount;
 
-	const outCount = parseInt(document.getElementById('prop-out').value);
-	const inCount = parseInt(document.getElementById('prop-in').value);
-	const total = outCount + inCount;
-
-	for (let i = 0; i < outCount; i++) {
-		const pos = getRectPos(i, total, width, height);
-		createSingleAnchor(gear, pos.x, pos.y, '#e74c3c', gear.id() + '-out' + i);
+		for (let i = 0; i < outCount; i++) {
+			const pos = getRectPos(i, total, width, height);
+			createSingleAnchor(gear, pos.x, pos.y, '#e74c3c', gear.id() + '-out' + i);
+		}
+		for (let i = 0; i < inCount; i++) {
+			const pos = getRectPos(i + outCount, total, width, height);
+			createSingleAnchor(gear, pos.x, pos.y, '#3498db', gear.id() + '-in' + i);
+		}
+		updateAllCables();
+		saveHistory();
 	}
-	for (let i = 0; i < inCount; i++) {
-		const pos = getRectPos(i + outCount, total, width, height);
-		createSingleAnchor(gear, pos.x, pos.y, '#3498db', gear.id() + '-in' + i);
-	}
-	updateAllCables();
-	saveHistory();
 }
 
 document.getElementById('cable-label').oninput = (e) => {

@@ -986,7 +986,8 @@ window.addEventListener('keydown', (e) => {
 				outCount: gear.find('.anchor').filter(a => a.fill() === '#e74c3c').length,
 				inCount: gear.find('.anchor').filter(a => a.fill() === '#3498db').length,
 				width: gear.findOne('.icon').getClientRect().width,
-				height: gear.findOne('.icon').getClientRect().height
+				height: gear.findOne('.icon').getClientRect().height,
+				anchors: gear.find('.anchor').map(a => ({ x: a.x(), y: a.y(), color: a.fill() })),
 			}));
 		}
 	}
@@ -998,7 +999,7 @@ window.addEventListener('keydown', (e) => {
 			const y = mousePos ? mousePos.y : 150;
 
 			clipboard.forEach(c =>
-				addEquipment(c.src, x, y, null, c.label, c.outCount, c.inCount, null, c.width, c.height)
+				addEquipment(c.src, x, y, null, c.label, c.outCount, c.inCount, c.anchors, c.width, c.height)
 			);
 		}
 	}

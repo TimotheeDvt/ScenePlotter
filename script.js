@@ -445,6 +445,7 @@ function createSingleAnchor(group, x, y, color, id) {
 	c.on('dragend', (e) => {
 		e.cancelBubble = true;
 		group.find('.virtual-anchor').forEach(va => va.destroy());
+		showAnchorsOfGear(group, true);
 		mainLayer.draw();
 		saveHistory();
 	});
@@ -623,7 +624,11 @@ document.getElementById('cable-color-picker').oninput = (e) => {
 // --- CABLES ---
 function updateAllCables() { cables.forEach(c => c.redraw()); cableLayer.batchDraw(); }
 function showAllAnchors(v) { stage.find('.anchor').forEach(a => a.opacity(v ? 1 : 0)); mainLayer.draw(); }
-function showAnchorsOfGear(g, v) { g.find('.anchor').forEach(a => a.opacity(v ? 1 : 0)); mainLayer.draw(); }
+function showAnchorsOfGear(g, v) {
+	if (!v && activeAnchor) return;
+    g.find('.anchor').forEach(a => a.opacity(v ? 1 : 0));
+    mainLayer.draw();
+}
 
 stage.on('mousemove touchmove', () => {
 	if (!activeAnchor) return;

@@ -93,6 +93,95 @@ stage.container().addEventListener('mousedown', (e) => {
 const dragLine = new Konva.Line({ stroke: '#ffffff', strokeWidth: 2, dash: [5, 5], visible: false, listening: false });
 tempLayer.add(dragLine);
 
+let selectionRect;
+let selectionStartPos = { x: 0, y: 0 };
+selectionRect = new Konva.Rect({
+	fill: 'rgba(0, 122, 204, 0.3)',
+	stroke: '#007acc',
+	strokeWidth: 1,
+	visible: false,
+	listening: false
+});
+tempLayer.add(selectionRect);
+
+stage.on('mousedown touchstart', (e) => {
+	if (e.target === stage || e.target.hasName('grid-background')) {
+		const pos = stage.getRelativePointerPosition();
+		selectionStartPos = pos;
+
+		selectionRect.setAttrs({
+			width: 0,
+			height: 0,
+			x: pos.x,
+			y: pos.y,
+			visible: true
+		});
+
+		if (!e.evt.shiftKey && !e.evt.ctrlKey) {
+			deselectAll();
+		}
+	}
+});
+
+stage.on('mousemove touchmove', (e) => {
+	if (!selectionRect.visible()) return;
+
+	const pos = stage.getRelativePointerPosition();
+
+	selectionRect.setAttrs({
+		x: Math.min(pos.x, selectionStartPos.x),
+		y: Math.min(pos.y, selectionStartPos.y),
+		width: Math.abs(pos.x - selectionStartPos.x),
+		height: Math.abs(pos.y - selectionStartPos.y),
+	});
+
+	tempLayer.batchDraw();
+});
+
+window.addEventListener('mouseup', (e) => {
+	if (!selectionRect.visible()) return;
+
+	selectionRect.visible(false);
+
+	const box = selectionRect.getClientRect();
+	const gears = stage.find('.gear');
+	let selected = [];
+
+	gears.forEach((gear) => {
+		if (Konva.Util.haveIntersection(box, gear.getClientRect())) {
+			selected.push(gear);
+		}
+	});
+
+	if (selected.length > 0) {
+		if (e.shiftKey || e.ctrlKey) {
+			const currentIds = selectedGears.map(g => g.id());
+			selected.forEach(g => {
+				if (!currentIds.includes(g.id())) selectedGears.push(g);
+			});
+		} else {
+			selectedGears = selected;
+		}
+
+		tr.nodes(selectedGears);
+
+		canvasProps.style.display = 'none';
+		selectionActions.style.display = 'block';
+
+		if (selectedGears.length === 1) {
+			gearProps.style.display = 'block';
+			const gear = selectedGears[0];
+			document.getElementById('prop-label').value = gear.findOne('Text').text();
+			document.getElementById('prop-size-cm').value = (gear.findOne('.icon').width() / PX_PER_CM).toFixed(1);
+		} else {
+			gearProps.style.display = 'none';
+			document.getElementById('prop-title').innerText = `${selectedGears.length} Éléments sélectionnés`;
+		}
+	}
+
+	tempLayer.draw();
+});
+
 window.addEventListener('resize', () => {
 	stage.width(container.offsetWidth);
 	stage.height(container.offsetHeight);
@@ -339,7 +428,7 @@ function selectGear(group, isMultiSelect = false) {
 
 	if (selectedGears.length > 0) {
 		canvasProps.style.display = 'none';
-		gearProps.style.display = selectedGears.length === 1 ? 'block' : 'none'; // Cache les props si plusieurs
+		gearProps.style.display = selectedGears.length === 1 ? 'block' : 'none';
 		cableProps.style.display = 'none';
 		selectionActions.style.display = 'block';
 		document.getElementById('prop-title').innerText = selectedGears.length > 1
@@ -759,7 +848,7 @@ function getRectPos(index, total, width = 80, height = 80) {
 	const step = perimeter / total;
 
 	// Starting point offset (optional: adjusts where the first anchor appears)
-	const dist = (index * step) % perimeter;
+	const dist = (index * step + (width + height) * 3.25) % perimeter;
 
 	// Top edge
 	if (dist <= width) {
@@ -792,15 +881,15 @@ centerStage();
 
 window.addEventListener('keydown', (e) => {
 	if (e.ctrlKey && e.key === 'c') {
-		if (selectedGear) {
-			clipboard = {
+		if (selectedGears.length > 0) {
+			clipboard = Array.from(selectedGears).map(selectedGear => ({
 				src: selectedGear.findOne('.icon').image().src,
 				label: selectedGear.findOne('Text').text(),
 				outCount: selectedGear.find('.anchor').filter(a => a.fill() === '#e74c3c').length,
 				inCount: selectedGear.find('.anchor').filter(a => a.fill() === '#3498db').length,
 				width: selectedGear.findOne('.icon').getClientRect().width,
 				height: selectedGear.findOne('.icon').getClientRect().height
-			};
+			}));
 		}
 	}
 
@@ -810,23 +899,33 @@ window.addEventListener('keydown', (e) => {
 			const x = mousePos ? mousePos.x : 150;
 			const y = mousePos ? mousePos.y : 150;
 
-			addEquipment(clipboard.src, x, y, null, clipboard.label, clipboard.outCount, clipboard.inCount, null, clipboard.width, clipboard.height);
+			clipboard.forEach(c =>
+				addEquipment(c.src, x, y, null, c.label, c.outCount, c.inCount, null, c.width, c.height)
+			);
 		}
 	}
 
 	if (e.ctrlKey && e.key === 'x') {
-		if (selectedGear) {
-			clipboard = {
+		if (selectedGears.length > 0) {
+			clipboard = Array.from(selectedGears).map(selectedGear => ({
 				src: selectedGear.findOne('.icon').image().src,
 				label: selectedGear.findOne('Text').text(),
 				outCount: selectedGear.find('.anchor').filter(a => a.fill() === '#e74c3c').length,
 				inCount: selectedGear.find('.anchor').filter(a => a.fill() === '#3498db').length,
 				width: selectedGear.findOne('.icon').getClientRect().width,
 				height: selectedGear.findOne('.icon').getClientRect().height
-			};
+			}));
 			executeDelete();
-			selectedGear = null;
+			selectedGears = [];
 		}
+	}
+
+	if (e.ctrlKey && e.key === 'a') {
+		// Sélectionner tous les équipements et les câbles
+		e.preventDefault();
+		const allGears = stage.find('.gear');
+		selectedGears = allGears;
+		tr.nodes(selectedGears);
 	}
 });
 
@@ -844,7 +943,8 @@ function saveHistory() {
 			anchors: g.find('.anchor').map(a => ({ x: a.x(), y: a.y(), color: a.fill(), id: a.id() })),
 			inCount: g.find('.anchor').filter(a => a.fill() === '#3498db').length,
 			outCount: g.find('.anchor').filter(a => a.fill() === '#e74c3c').length,
-			width: g.findOne('.icon').width()
+			width: g.findOne('.icon').width(),
+			height: g.findOne('.icon').height()
 		})),
 		cables: cables.map(c => ({
 			fromId: c.fromId, toId: c.toId, color: c.line.stroke(), label: c.label ? c.label.text() : "",
@@ -862,7 +962,7 @@ function saveHistory() {
 }
 
 function applyHistory(step) {
-	isApplyingHistory = true; // On bloque les sauvegardes auto
+	isApplyingHistory = true;
 	const state = JSON.parse(history[step]);
 
 	mainLayer.getChildren().filter(c => c.hasName('gear')).forEach(g => g.destroy());

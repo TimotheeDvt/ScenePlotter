@@ -718,7 +718,7 @@ function getOrthoPoints(points) {
 function getRectPos(index, total, size = 80) {
 	const perimeter = size * 4;
 	const step = perimeter / total;
-	const dist = index * step;
+	const dist = (index * step + size * 2.5) % perimeter;
 	if (dist <= size) return { x: dist, y: 0 };
 	if (dist <= size * 2) return { x: size, y: dist - size };
 	if (dist <= size * 3) return { x: size * 3 - dist, y: size };

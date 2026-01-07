@@ -7,6 +7,8 @@ let clipboard = null;
 let history = ["{\"gear\": [], \"cables\": []}"];
 let historyStep = 0;
 let isApplyingHistory = false;
+let canvasBackgroundColor = '#2a2a2a';
+let showGrid = true;
 
 const PX_PER_CM = 15;
 
@@ -202,10 +204,16 @@ function drawGrid() {
 		y: 0,
 		width: gridWidth,
 		height: gridHeight,
-		fill: '#2a2a2a',
-		listening: false
+		fill: canvasBackgroundColor,
+		listening: false,
+		name: 'grid-background'
 	});
 	gridLayer.add(background);
+
+	if (!showGrid) {
+		gridLayer.draw();
+		return;
+	}
 
 	for (let i = 0; i <= gridWidth / 50; i++) {
 		gridLayer.add(new Konva.Line({
@@ -247,7 +255,8 @@ function updateCanvasSize() {
 }
 
 document.getElementById('canvas-bg-color').oninput = (e) => {
-	container.style.backgroundColor = e.target.value;
+	canvasBackgroundColor = e.target.value;
+    drawGrid();
 };
 document.getElementById('canvas-width-cm').onchange = updateCanvasSize;
 document.getElementById('canvas-height-cm').onchange = updateCanvasSize;
@@ -1097,4 +1106,9 @@ function createVirtualAnchor(group, x, y) {
 		listening: false
 	});
 	group.add(vAnchor);
+}
+
+function toggleGrid(visible) {
+    showGrid = visible;
+    drawGrid(); // On redessine pour appliquer le changement
 }

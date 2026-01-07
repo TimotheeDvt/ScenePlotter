@@ -302,6 +302,17 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", outCount
 
 		const finalWidth = width || 80;
 		const finalHeight = height || 80;
+		const padding = 10;
+		const hitArea = new Konva.Rect({
+			x: -padding,
+			y: -padding,
+			width: finalWidth + (padding * 2),
+			height: finalHeight + (padding * 2),
+			fill: 'transparent',
+			name: 'hit-area'
+		});
+		group.add(hitArea);
+
 		const img = new Konva.Image({
 			image: nativeImg,
 			width: finalWidth,
@@ -368,7 +379,7 @@ function createSingleAnchor(group, x, y, color, id) {
 	c.oldColor = color;
 
 	c.on('contextmenu', (e) => {
-		e.evt.preventDefault(); // Empêche le menu de s'ouvrir sur l'ancre
+		e.evt.preventDefault();
 	});
 
 	c.on('mousedown touchstart', (e) => {
@@ -383,7 +394,26 @@ function createSingleAnchor(group, x, y, color, id) {
 
 	c.on('mouseup touchend', (e) => {
 		if (e.evt.button === 0) {
-			c.stopDrag(); // Force l'arrêt du drag au relâchement du clic droit
+			c.stopDrag();
+		}
+	});
+
+	c.on('dragstart', (e) => {
+		e.cancelBubble = true;
+
+		const img = group.findOne('.icon');
+		const w = img.width();
+		const h = img.height();
+
+		const local_snap_size = SNAP_SIZE / 2;
+
+		for (let ix = 0; ix <= w; ix += local_snap_size) {
+			createVirtualAnchor(group, ix, 0);
+			createVirtualAnchor(group, ix, h);
+		}
+		for (let iy = local_snap_size; iy < h; iy += local_snap_size) {
+			createVirtualAnchor(group, 0, iy);
+			createVirtualAnchor(group, w, iy);
 		}
 	});
 
@@ -412,7 +442,10 @@ function createSingleAnchor(group, x, y, color, id) {
 		updateAllCables();
 	});
 
-	c.on('dragend', () => {
+	c.on('dragend', (e) => {
+		e.cancelBubble = true;
+		group.find('.virtual-anchor').forEach(va => va.destroy());
+		mainLayer.draw();
 		saveHistory();
 	});
 
@@ -883,7 +916,6 @@ function getOrthoPoints(points) {
 }
 
 function getRectPos(index, total, width, height) {
-	console.log(index, total, width, height);
 	const perimeter = (width + height) * 2;
 	const step = perimeter / total;
 
@@ -1048,3 +1080,16 @@ window.addEventListener('keydown', (e) => {
 stage.container().addEventListener('contextmenu', (e) => {
 	e.preventDefault();
 });
+
+function createVirtualAnchor(group, x, y) {
+	const vAnchor = new Konva.Circle({
+		x: x,
+		y: y,
+		radius: 4,
+		fill: '#666',
+		opacity: 0.5,
+		name: 'virtual-anchor',
+		listening: false
+	});
+	group.add(vAnchor);
+}

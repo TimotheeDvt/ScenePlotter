@@ -80,6 +80,7 @@ h3 {
 	height: 40px;
 	object-fit: contain;
 	pointer-events: none;
+	background-color: transparent;
 }
 
 button {

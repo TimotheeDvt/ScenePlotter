@@ -23,7 +23,12 @@ const mainLayer = new Konva.Layer();
 const tempLayer = new Konva.Layer();
 stage.add(gridLayer, cableLayer, mainLayer, tempLayer);
 
-const tr = new Konva.Transformer({ rotateAnchorOffset: 30, borderStroke: '#007acc' });
+const tr = new Konva.Transformer({
+	rotateAnchorOffset: 30,
+	borderStroke: '#007acc',
+	keepRatio: true,
+	enabledAnchors: ['top-left', 'top-right', 'bottom-left', 'bottom-right']
+});
 tr.on('transform', () => {
 	if (selectedGear) {
 		const img = selectedGear.findOne('.icon');
@@ -188,7 +193,7 @@ document.getElementById('btn-delete').onclick = executeDelete;
 window.addEventListener('keydown', (e) => { if (e.key === 'Delete' || e.key === 'Backspace') executeDelete(); });
 
 // Gears
-function addEquipment(src, x = 100, y = 100, id = null, labelText = "", outCount = 2, inCount = 2, anchorData = null, size = null) {
+function addEquipment(src, x = 100, y = 100, id = null, labelText = "", outCount = 2, inCount = 2, anchorData = null, width = null, height = null) {
 	const nativeImg = new Image();
 	nativeImg.onload = () => {
 		const group = new Konva.Group({
@@ -199,11 +204,12 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", outCount
 			id: id || 'g' + Date.now()
 		});
 
-		const imgSize = size || 80;
+		const finalWidth = width || 80;
+        const finalHeight = height || 80;
 		const img = new Konva.Image({
 			image: nativeImg,
-			width: imgSize,
-			height: imgSize,
+			width: finalWidth,
+			height: finalHeight,
 			name: 'icon'
 		});
 
@@ -211,8 +217,8 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", outCount
 			text: labelText,
 			fontSize: 12,
 			fill: 'white',
-			y: imgSize + 5,
-			width: imgSize,
+			y: finalWidth + 5,
+			width: finalWidth,
 			align: 'center',
 			fontStyle: 'bold',
 			listening: false,
@@ -299,11 +305,11 @@ function createSingleAnchor(group, x, y, color, id) {
 function generateDefaultAnchors(group, outCount, inCount) {
 	const total = parseInt(outCount) + parseInt(inCount);
 	for (let i = 0; i < outCount; i++) {
-		const pos = getRectPos(i, total);
+		const pos = getRectPos(i, total, group.findOne('.icon').width(), group.findOne('.icon').height());
 		createSingleAnchor(group, pos.x, pos.y, '#e74c3c', group.id() + '-out' + i);
 	}
 	for (let i = 0; i < inCount; i++) {
-		const pos = getRectPos(i + parseInt(outCount), total);
+		const pos = getRectPos(i + parseInt(outCount), total, group.findOne('.icon').width(), group.findOne('.icon').height());
 		createSingleAnchor(group, pos.x, pos.y, '#3498db', group.id() + '-in' + i);
 	}
 }
@@ -335,8 +341,10 @@ document.getElementById('prop-size-cm').oninput = (e) => {
 		if (val > 10) {
 			const img = selectedGear.findOne('.icon');
 			const text = selectedGear.findOne('Text');
+			const ratio = img.height() / img.width();
 			img.width(val);
-			img.height(val);
+			img.height(val * ratio);
+
 			text.width(val);
 			text.y(val + 5);
 
@@ -388,7 +396,8 @@ document.getElementById('prop-in').onchange = () => updateIO();
 document.getElementById('prop-out').onchange = () => updateIO();
 function updateIO() {
 	if (!selectedGear) return;
-	const size = selectedGear.findOne('.icon').width();
+	const width = selectedGear.findOne('.icon').width();
+	const height = selectedGear.findOne('.icon').height();
 	selectedGear.find('.anchor').forEach(a => a.destroy());
 
 	const outCount = document.getElementById('prop-out').value;
@@ -396,11 +405,11 @@ function updateIO() {
 	const total = parseInt(outCount) + parseInt(inCount);
 
 	for (let i = 0; i < outCount; i++) {
-		const pos = getRectPos(i, total, size);
+		const pos = getRectPos(i, total, width, height);
 		createSingleAnchor(selectedGear, pos.x, pos.y, '#e74c3c', selectedGear.id() + '-out' + i);
 	}
 	for (let i = 0; i < inCount; i++) {
-		const pos = getRectPos(i + parseInt(outCount), total, size);
+		const pos = getRectPos(i + parseInt(outCount), total, width, height);
 		createSingleAnchor(selectedGear, pos.x, pos.y, '#3498db', selectedGear.id() + '-in' + i);
 	}
 	updateAllCables();
@@ -634,8 +643,20 @@ if (typeof SVG_LIBRARY !== 'undefined') {
 		cats[catName].forEach(f => {
 			const item = document.createElement('div');
 			item.className = 'bank-item';
-			item.innerHTML = `<img src="svgs/${f.path || f}"><span>${f.name || f}</span>`;
-			item.onclick = () => addEquipment(`svgs/${f.path || f}`, 150, 150, null, "", f.outputNbAnchors ?? 2, f.inputNbAnchors ?? 2);
+			const imagePath = `svgs/${f.path || f}`;
+			item.innerHTML = `<img src="${imagePath}"><span>${f.name || f}</span>`;
+			item.onclick = () => addEquipment(
+				imagePath,
+				150,
+				150,
+				null,
+				"",
+				f.outputNbAnchors ?? 2,
+				f.inputNbAnchors ?? 2,
+				null,
+				f.width ?? 80,
+				f.height ?? 80
+			);
 			grid.appendChild(item);
 		});
 		lib.appendChild(title); lib.appendChild(grid);
@@ -650,6 +671,7 @@ function saveStage() {
 			id: g.id(), x: g.x(), y: g.y(), label: g.findOne('Text').text(), src: g.findOne('.icon').image().src,
 			anchors: g.find('.anchor').map(a => ({ x: a.x(), y: a.y(), color: a.fill(), id: a.id() })),
 			width: g.findOne('.icon').width(),
+			height: g.findOne('.icon').height(),
 			inCount: g.find('.anchor').filter(a => a.fill() === '#3498db').length,
 			outCount: g.find('.anchor').filter(a => a.fill() === '#e74c3c').length
 		})),
@@ -675,7 +697,7 @@ function loadStage(event) {
 		cables = [];
 		isOrtho = data.isOrtho;
 		document.getElementById('orthoToggle').checked = isOrtho;
-		data.gear.forEach(g => addEquipment(g.src, g.x, g.y, g.id, g.label, g.outCount, g.inCount, g.anchors, g.width));
+		data.gear.forEach(g => addEquipment(g.src, g.x, g.y, g.id, g.label, g.outCount, g.inCount, g.anchors, g.width, g.height));
 		setTimeout(() => {
 			data.cables.forEach(c => {
 				const sn = stage.findOne('#' + c.fromId); const en = stage.findOne('#' + c.toId);
@@ -715,14 +737,27 @@ function getOrthoPoints(points) {
 	return ortho;
 }
 
-function getRectPos(index, total, size = 80) {
-	const perimeter = size * 4;
-	const step = perimeter / total;
-	const dist = (index * step + size * 2.5) % perimeter;
-	if (dist <= size) return { x: dist, y: 0 };
-	if (dist <= size * 2) return { x: size, y: dist - size };
-	if (dist <= size * 3) return { x: size * 3 - dist, y: size };
-	return { x: 0, y: size * 4 - dist };
+function getRectPos(index, total, width = 80, height = 80) {
+    const perimeter = (width + height) * 2;
+    const step = perimeter / total;
+    
+    // Starting point offset (optional: adjusts where the first anchor appears)
+    const dist = (index * step) % perimeter;
+
+    // Top edge
+    if (dist <= width) {
+        return { x: dist, y: 0 };
+    }
+    // Right edge
+    if (dist <= width + height) {
+        return { x: width, y: dist - width };
+    }
+    // Bottom edge
+    if (dist <= width * 2 + height) {
+        return { x: width - (dist - (width + height)), y: height };
+    }
+    // Left edge
+    return { x: 0, y: height - (dist - (width * 2 + height)) };
 }
 
 function centerStage() {
@@ -746,7 +781,8 @@ window.addEventListener('keydown', (e) => {
 				label: selectedGear.findOne('Text').text(),
 				outCount: selectedGear.find('.anchor').filter(a => a.fill() === '#e74c3c').length,
 				inCount: selectedGear.find('.anchor').filter(a => a.fill() === '#3498db').length,
-				width: selectedGear.findOne('.icon').getClientRect().width
+				width: selectedGear.findOne('.icon').getClientRect().width,
+				height: selectedGear.findOne('.icon').getClientRect().height
 			};
 		}
 	}
@@ -757,7 +793,7 @@ window.addEventListener('keydown', (e) => {
 			const x = mousePos ? mousePos.x : 150;
 			const y = mousePos ? mousePos.y : 150;
 
-			addEquipment(clipboard.src, x, y, null, clipboard.label, clipboard.outCount, clipboard.inCount, null, clipboard.width);
+			addEquipment(clipboard.src, x, y, null, clipboard.label, clipboard.outCount, clipboard.inCount, null, clipboard.width, clipboard.height);
 		}
 	}
 
@@ -768,7 +804,8 @@ window.addEventListener('keydown', (e) => {
 				label: selectedGear.findOne('Text').text(),
 				outCount: selectedGear.find('.anchor').filter(a => a.fill() === '#e74c3c').length,
 				inCount: selectedGear.find('.anchor').filter(a => a.fill() === '#3498db').length,
-				width: selectedGear.findOne('.icon').getClientRect().width
+				width: selectedGear.findOne('.icon').getClientRect().width,
+				height: selectedGear.findOne('.icon').getClientRect().height
 			};
 			executeDelete();
 			selectedGear = null;
@@ -811,7 +848,6 @@ function applyHistory(step) {
 	isApplyingHistory = true; // On bloque les sauvegardes auto
 	const state = JSON.parse(history[step]);
 
-	// 1. Nettoyage
 	mainLayer.getChildren().filter(c => c.hasName('gear')).forEach(g => g.destroy());
 	cables.forEach(c => {
 		c.line.destroy();
@@ -820,15 +856,11 @@ function applyHistory(step) {
 	});
 	cables = [];
 
-	// 2. Recréation
 	state.gear.forEach(g => {
-		// On appelle addEquipment (le flag isApplyingHistory empêchera les saveHistory internes)
-		addEquipment(g.src, g.x, g.y, g.id, g.label, g.outCount, g.inCount, g.anchors, g.width);
-		// On redessine l'image
+		addEquipment(g.src, g.x, g.y, g.id, g.label, g.outCount, g.inCount, g.anchors, g.width, g.height);
 		mainLayer.draw();
 	});
 
-	// 3. Attente du chargement des images pour lier les câbles
 	setTimeout(() => {
 		state.cables.forEach(c => {
 			const sn = stage.findOne('#' + c.fromId);
@@ -841,9 +873,8 @@ function applyHistory(step) {
 		mainLayer.draw();
 		cableLayer.draw();
 
-		// On ne libère le flag qu'ICI, une fois que tout est dessiné
 		isApplyingHistory = false;
-	}, 150); // Légère augmentation pour la sécurité
+	}, 150);
 }
 
 window.addEventListener('keydown', (e) => {

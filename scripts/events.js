@@ -189,7 +189,7 @@ window.addEventListener('mouseup', (e) => {
 		const pos = stage.getRelativePointerPosition();
 		const target = stage.find('.anchor').find(a => {
 			const p = a.getAbsolutePosition(stage);
-			return Math.sqrt((pos.x - p.x) ** 2 + (pos.y - p.y) ** 2) < 25 && a !== activeAnchor;
+			return Math.sqrt((pos.x - p.x) ** 2 + (pos.y - p.y) ** 2) < ANCHOR_HIT_RADIUS && a !== activeAnchor;
 		});
 		if (target) createCable(activeAnchor, target, []);
 		activeAnchor = null;

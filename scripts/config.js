@@ -18,7 +18,8 @@ let isMeasuring = false;
 
 // Constants
 let PX_PER_CM = 15;
-let SNAP_SIZE = 15;
+let ANCHOR_HIT_RADIUS = 40;
+let SNAP_SIZE = 10 * PX_PER_CM;
 let GRID_CELL_SIZE = 20 * PX_PER_CM;
 let gridWidth = 600 * PX_PER_CM;
 let gridHeight = 400 * PX_PER_CM;

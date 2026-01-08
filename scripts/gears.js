@@ -5,26 +5,7 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", outCount
 			x: x, y: y, draggable: true, name: 'gear', id: id || 'g' + Date.now()
 		});
 
-		const finalWidth = width || 80;
-		const finalHeight = height || 80;
-
-		group.add(new Konva.Rect({
-			x: -10, y: -10, width: finalWidth + 20, height: finalHeight + 20,
-			fill: 'transparent', name: 'hit-area'
-		}));
-
-		const img = new Konva.Image({
-			image: nativeImg, width: finalWidth, height: finalHeight, name: 'icon'
-		});
-
-		const label = new Konva.Text({
-			text: labelText, fontSize: 12, fill: 'white', y: finalWidth + 5,
-			width: finalWidth, align: 'center', fontStyle: 'bold',
-			listening: false, visible: labelText !== ""
-		});
-
-		group.add(img, label);
-		mainLayer.add(group);
+		addUI(group, nativeImg, labelText, width, height);
 
 		if (anchorData) {
 			anchorData.forEach(ad => createSingleAnchor(group, ad.x, ad.y, ad.color, ad.id));
@@ -32,23 +13,7 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", outCount
 			generateDefaultAnchors(group, outCount, inCount);
 		}
 
-		group.on('mouseenter', () => showAnchorsOfGear(group, true));
-		group.on('mouseleave', () => { if (!activeAnchor) showAnchorsOfGear(group, false) });
-
-		group.on('click tap', (e) => {
-			e.cancelBubble = true;
-			selectGear(group, e.evt.shiftKey || e.evt.ctrlKey);
-		});
-
-		group.on('dragmove', () => {
-			group.position({
-				x: Math.round(group.x() / SNAP_SIZE) * SNAP_SIZE,
-				y: Math.round(group.y() / SNAP_SIZE) * SNAP_SIZE
-			});
-			updateAllCables();
-		});
-
-		group.on('dragend', () => saveHistory());
+		addEventListenersGroup(group)
 
 		if (!isApplyingHistory) saveHistory();
 		mainLayer.batchDraw();
@@ -64,6 +29,63 @@ function createSingleAnchor(group, x, y, color, id) {
 	});
 	c.oldColor = color;
 
+	addEventListenersAnchor(c, img, group);
+
+	group.add(c);
+	return c;
+}
+
+function createVirtualAnchor(group, x, y) {
+	group.add(new Konva.Circle({
+		x, y, radius: 4, fill: '#666', opacity: 0.5,
+		name: 'virtual-anchor', listening: false
+	}));
+}
+
+function addUI(group, nativeImg, labelText, width, height) {
+	const finalWidth = width || 80;
+	const finalHeight = height || 80;
+
+	group.add(new Konva.Rect({
+		x: -10, y: -10, width: finalWidth + 20, height: finalHeight + 20,
+		fill: 'transparent', name: 'hit-area'
+	}));
+
+	const img = new Konva.Image({
+		image: nativeImg, width: finalWidth, height: finalHeight, name: 'icon'
+	});
+
+	const label = new Konva.Text({
+		text: labelText, fontSize: 12, fill: 'white', y: finalWidth + 5,
+		width: finalWidth, align: 'center', fontStyle: 'bold',
+		listening: false, visible: labelText !== ""
+	});
+
+	group.add(img, label);
+	mainLayer.add(group);
+}
+
+function addEventListenersGroup(group) {
+	group.on('mouseenter', () => showAnchorsOfGear(group, true));
+	group.on('mouseleave', () => { if (!activeAnchor) showAnchorsOfGear(group, false) });
+
+	group.on('click tap', (e) => {
+		e.cancelBubble = true;
+		selectGear(group, e.evt.shiftKey || e.evt.ctrlKey);
+	});
+
+	group.on('dragmove', () => {
+		group.position({
+			x: Math.round(group.x() / SNAP_SIZE) * SNAP_SIZE,
+			y: Math.round(group.y() / SNAP_SIZE) * SNAP_SIZE
+		});
+		updateAllCables();
+	});
+
+	group.on('dragend', () => saveHistory());
+}
+
+function addEventListenersAnchor(c, img, group) {
 	c.on('mousedown touchstart', (e) => {
 		e.cancelBubble = true;
 		if (e.evt.button === 0 && (e.evt.ctrlKey || e.evt.metaKey)) {
@@ -117,16 +139,6 @@ function createSingleAnchor(group, x, y, color, id) {
 		mainLayer.draw();
 		saveHistory();
 	});
-
-	group.add(c);
-	return c;
-}
-
-function createVirtualAnchor(group, x, y) {
-	group.add(new Konva.Circle({
-		x, y, radius: 4, fill: '#666', opacity: 0.5,
-		name: 'virtual-anchor', listening: false
-	}));
 }
 
 function generateDefaultAnchors(group, outCount, inCount) {

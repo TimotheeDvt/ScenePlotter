@@ -30,7 +30,19 @@ function updateCanvasSize() {
 }
 
 function centerStage() {
-	stage.position({ x: (container.offsetWidth - gridWidth) / 2, y: (container.offsetHeight - gridHeight) / 2 });
+	const paddingFactor = 0.95;
+	const scaleX = (container.offsetWidth / gridWidth) * paddingFactor;
+	const scaleY = (container.offsetHeight / gridHeight) * paddingFactor;
+
+	const newScale = Math.min(scaleX, scaleY, 1);
+
+	stage.scale({ x: newScale, y: newScale });
+
+	stage.position({
+		x: (container.offsetWidth - gridWidth * newScale) / 2,
+		y: (container.offsetHeight - gridHeight * newScale) / 2
+	});
+
 	stage.batchDraw();
 }
 
@@ -259,3 +271,27 @@ function getOrthoPoints(points, inverse = true) {
 }
 
 function toggleGrid(visible) { showGrid = visible; drawGrid(); }
+
+function showHelp() {
+	const help = document.getElementById('help-modal');
+	help.classList.toggle('hidden');
+	// prevent the immediate document click (which triggered the toggle)
+	helpToggleLock = true;
+	setTimeout(() => { helpToggleLock = false; }, 100);
+}
+
+function closeHelp() {
+	const help = document.getElementById('help-modal');
+	if (help && !help.classList.contains('hidden')) help.classList.add('hidden');
+}
+
+// Close help modal when clicking outside of it
+document.addEventListener('click', (e) => {
+	const help = document.getElementById('help-modal');
+	if (!help) return;
+	if (helpToggleLock) return;
+	if (help.classList.contains('hidden')) return;
+	if (!help.contains(e.target)) {
+		help.classList.add('hidden');
+	}
+});

@@ -11,6 +11,7 @@ let isApplyingHistory = false;
 let canvasBackgroundColor = '#2a2a2a';
 let showGrid = true;
 let selectionStartPos = { x: 0, y: 0 };
+let helpToggleLock = false;
 
 // Constants
 const PX_PER_CM = 15;

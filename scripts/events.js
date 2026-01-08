@@ -27,7 +27,7 @@ stage.on('wheel', (e) => {
 	const mousePointTo = { x: (pointer.x - stage.x()) / oldScale, y: (pointer.y - stage.y()) / oldScale };
 	const newScale = e.evt.deltaY < 0 ? oldScale * 1.1 : oldScale / 1.1;
 
-	if (newScale > 0.4 && newScale < 3) {
+	if (newScale > 0 && newScale < Infinity) {
 		stage.scale({ x: newScale, y: newScale });
 		const newPos = { x: pointer.x - mousePointTo.x * newScale, y: pointer.y - mousePointTo.y * newScale };
 		stage.position(newPos);
@@ -95,7 +95,7 @@ window.addEventListener('mouseup', (e) => {
 			const p = a.getAbsolutePosition(stage);
 			return Math.sqrt((pos.x - p.x) ** 2 + (pos.y - p.y) ** 2) < 25 && a !== activeAnchor;
 		});
-		if (target) createCable(activeAnchor, target);
+		if (target) createCable(activeAnchor, target, []);
 		activeAnchor = null;
 		dragLine.visible(false);
 		showAllAnchors(false);
@@ -109,6 +109,8 @@ window.addEventListener('keydown', (e) => {
 	if (e.ctrlKey && e.key === 'c') copyGears();
 	if (e.ctrlKey && e.key === 'v') pasteGears();
 	if (e.ctrlKey && e.key === 'x') cutGears();
+	// ctrl + e => center stage
+	if (e.ctrlKey && e.key === 'e') { e.preventDefault(); centerStage(); stage.batchDraw(); }
 	if (e.ctrlKey && e.key === 'a') { e.preventDefault(); selectedGears = stage.find('.gear'); updateSelectionUI(); }
 	if (e.ctrlKey && e.key === 'z') { if (historyStep > 0) applyHistory(--historyStep); }
 	if (e.ctrlKey && e.key === 'y') { if (historyStep < history.length - 1) applyHistory(++historyStep); }

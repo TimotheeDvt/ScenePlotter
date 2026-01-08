@@ -13,26 +13,7 @@ function createCable(startAnchor, endAnchor, midPoints = [], color = null, label
 		cableLayer.add(cableObj.label);
 	}
 
-	const redraw = () => {
-		const sn = stage.findOne('#' + cableObj.fromId);
-		const en = stage.findOne('#' + cableObj.toId);
-		if (!sn || !en) return;
-
-		const startPos = sn.getAbsolutePosition(stage);
-		const endPos = en.getAbsolutePosition(stage);
-		let pts = [startPos.x, startPos.y];
-		cableObj.handles.forEach(h => pts.push(h.getAbsolutePosition(stage).x, h.getAbsolutePosition(stage).y));
-		pts.push(endPos.x, endPos.y);
-
-		line.strokeLinearGradientStartPoint({ x: startPos.x, y: startPos.y });
-		line.strokeLinearGradientEndPoint({ x: endPos.x, y: endPos.y });
-		line.strokeLinearGradientColorStops([0, sn.fill(), 1, en.fill()]);
-		line.points(isOrtho ? getOrthoPoints(pts, cableObj.orthoInverse) : pts);
-
-		if (cableObj.label) {
-			cableObj.label.position({ x: (startPos.x + endPos.x) / 2, y: (startPos.y + endPos.y) / 2 - 15 });
-		}
-	};
+	function redraw() { cableRedraw(cableObj, line, isOrtho); }
 
 	line.on('contextmenu', (e) => {
 		e.evt.preventDefault();
@@ -89,4 +70,25 @@ function addHandleToCable(cableObj, group, x, y, redraw, isInit = false) {
 		cableObj.handles.push(h);
 	}
 	group.add(h);
+}
+
+function cableRedraw(cableObj, line, isOrtho) {
+	const sn = stage.findOne('#' + cableObj.fromId);
+	const en = stage.findOne('#' + cableObj.toId);
+	if (!sn || !en) return;
+
+	const startPos = sn.getAbsolutePosition(stage);
+	const endPos = en.getAbsolutePosition(stage);
+	let pts = [startPos.x, startPos.y];
+	cableObj.handles.forEach(h => pts.push(h.getAbsolutePosition(stage).x, h.getAbsolutePosition(stage).y));
+	pts.push(endPos.x, endPos.y);
+
+	line.strokeLinearGradientStartPoint({ x: startPos.x, y: startPos.y });
+	line.strokeLinearGradientEndPoint({ x: endPos.x, y: endPos.y });
+	line.strokeLinearGradientColorStops([0, sn.fill(), 1, en.fill()]);
+	line.points(isOrtho ? getOrthoPoints(pts, cableObj.orthoInverse) : pts);
+
+	if (cableObj.label) {
+		cableObj.label.position({ x: (startPos.x + endPos.x) / 2, y: (startPos.y + endPos.y) / 2 - 15 });
+	}
 }

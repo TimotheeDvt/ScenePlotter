@@ -504,8 +504,8 @@ function selectGear(group, isMultiSelect = false) {
 			const img = group.findOne('.icon');
 			document.getElementById('prop-label').value = group.findOne('Text').text();
 			document.getElementById('prop-size-cm').value = (img.width() / PX_PER_CM).toFixed(1);
-			document.getElementById('prop-in').value = group.find('.anchor').filter(a => a.fill() === '#3498db').length;
-			document.getElementById('prop-out').value = group.find('.anchor').filter(a => a.fill() === '#e74c3c').length;
+			document.getElementById('prop-in').value = group.find('.anchor').filter(a => a.oldColor === '#3498db').length;
+			document.getElementById('prop-out').value = group.find('.anchor').filter(a => a.oldColor === '#e74c3c').length;
 		}
 	} else {
 		deselectAll();
@@ -539,8 +539,8 @@ function selectCable(cableObj) {
 	cableObj.isSelected = true;
 	cableObj.line.strokeWidth(8);
 	if (cableObj.handlesGroup) {
-        cableObj.handlesGroup.visible(true);
-    }
+		cableObj.handlesGroup.visible(true);
+	}
 
 	canvasProps.style.display = 'none';
 	gearProps.style.display = 'none';
@@ -550,7 +550,8 @@ function selectCable(cableObj) {
 
 	document.getElementById('cable-label').value = cableObj.label ? cableObj.label.text() : "";
 	document.getElementById('cable-color-picker').value = cableObj.line.stroke();
-	cableLayer.draw();tempLayer.draw();
+	cableLayer.draw();
+	tempLayer.draw();
 }
 
 function deselectAll() {
@@ -559,10 +560,10 @@ function deselectAll() {
 	selectedCable = null;
 
 	cables.forEach(c => {
-        c.isSelected = false;
-        c.line.strokeWidth(4);
-        if (c.handlesGroup) c.handlesGroup.visible(false);
-    });
+		c.isSelected = false;
+		c.line.strokeWidth(4);
+		if (c.handlesGroup) c.handlesGroup.visible(false);
+	});
 
 	canvasProps.style.display = 'block';
 	gearProps.style.display = 'none';
@@ -681,7 +682,7 @@ stage.on('mouseup touchend', () => {
 	tempLayer.draw();
 });
 
-function createCable(startAnchor, endAnchor, midPoints = [], color = null, labelTxt = "") {
+function createCable(startAnchor, endAnchor, midPoints = [], color = null, labelTxt = "", orthoInverse = false) {
 	const line = new Konva.Line({
 		strokeWidth: 4,
 		lineCap: 'round',
@@ -690,7 +691,7 @@ function createCable(startAnchor, endAnchor, midPoints = [], color = null, label
 	});
 
 	const handlesGroup = new Konva.Group({ visible: false });
-	const cableObj = { line, fromId: startAnchor.id(), toId: endAnchor.id(), handles: [], isSelected: false, label: null };
+	const cableObj = { line, fromId: startAnchor.id(), toId: endAnchor.id(), handles: [], isSelected: false, label: null, orthoInverse: orthoInverse };
 
 	if (labelTxt) {
 		cableObj.label = new Konva.Text({ text: labelTxt, fontSize: 11, fill: 'white', fontStyle: 'italic' });
@@ -721,7 +722,7 @@ function createCable(startAnchor, endAnchor, midPoints = [], color = null, label
 		line.strokeLinearGradientEndPoint({ x: endPos.x, y: endPos.y });
 		line.strokeLinearGradientColorStops([0, colorStart, 1, colorEnd]);
 
-		line.points(isOrtho ? getOrthoPoints(pts) : pts);
+		line.points(isOrtho ? getOrthoPoints(pts, cableObj.orthoInverse) : pts);
 
 		if (cableObj.label) {
 			const midX = (startPos.x + endPos.x) / 2;
@@ -729,6 +730,14 @@ function createCable(startAnchor, endAnchor, midPoints = [], color = null, label
 			cableObj.label.position({ x: midX, y: midY - 15 });
 		}
 	};
+	line.on('contextmenu', (e) => {
+		e.evt.preventDefault(); // Empêche le menu contextuel du navigateur
+		if (isOrtho) {
+			cableObj.orthoInverse = !cableObj.orthoInverse;
+			redraw();
+			saveHistory();
+		}
+	});
 
 	const addHandleAtPos = (x, y) => {
 		const snapX = Math.round(x / SNAP_SIZE) * SNAP_SIZE;
@@ -876,16 +885,21 @@ function saveStage() {
 	const data = {
 		name: document.getElementById('projName').value,
 		gear: mainLayer.getChildren().filter(c => c.hasName('gear')).map(g => ({
-			id: g.id(), x: g.x(), y: g.y(), label: g.findOne('Text').text(), src: g.findOne('.icon').image().src,
+			id: g.id(),
+			x: g.x(),
+			y: g.y(),
+			label: g.findOne('Text').text(),
+			src: g.findOne('.icon').image().src.split("/svgs/")[1],
 			anchors: g.find('.anchor').map(a => ({ x: a.x(), y: a.y(), color: a.fill(), id: a.id() })),
 			width: g.findOne('.icon').width(),
 			height: g.findOne('.icon').height(),
-			inCount: g.find('.anchor').filter(a => a.fill() === '#3498db').length,
-			outCount: g.find('.anchor').filter(a => a.fill() === '#e74c3c').length
+			inCount: g.find('.anchor').filter(a => a.oldColor === '#3498db').length,
+			outCount: g.find('.anchor').filter(a => a.oldColor === '#e74c3c').length
 		})),
 		cables: cables.map(c => ({
 			fromId: c.fromId, toId: c.toId, color: c.line.stroke(), label: c.label ? c.label.text() : "",
-			midPoints: c.handles.map(h => ({ x: h.x(), y: h.y() }))
+			midPoints: c.handles.map(h => ({ x: h.x(), y: h.y() })),
+			orthoInverse: c.orthoInverse
 		})),
 		isOrtho: isOrtho
 	};
@@ -905,11 +919,11 @@ function loadStage(event) {
 		cables = [];
 		isOrtho = data.isOrtho;
 		document.getElementById('orthoToggle').checked = isOrtho;
-		data.gear.forEach(g => addEquipment(g.src, g.x, g.y, g.id, g.label, g.outCount, g.inCount, g.anchors, g.width, g.height));
+		data.gear.forEach(g => addEquipment("svgs/" + g.src, g.x, g.y, g.id, g.label, g.outCount, g.inCount, g.anchors, g.width, g.height));
 		setTimeout(() => {
 			data.cables.forEach(c => {
 				const sn = stage.findOne('#' + c.fromId); const en = stage.findOne('#' + c.toId);
-				if (sn && en) createCable(sn, en, c.midPoints, c.color, c.label);
+				if (sn && en) createCable(sn, en, c.midPoints, c.color, c.label, c.orthoInverse);
 			});
 		}, 300);
 	};
@@ -934,13 +948,19 @@ function distToSegment(p, v, w) {
 	return Math.sqrt((p.x - (v.x + t * (w.x - v.x))) ** 2 + (p.y - (v.y + t * (w.y - v.y))) ** 2);
 }
 
-function getOrthoPoints(points) {
+function getOrthoPoints(points, inverse = true) {
 	let ortho = [points[0], points[1]];
 	for (let i = 0; i < points.length - 2; i += 2) {
 		let x1 = points[i], y1 = points[i + 1];
 		let x2 = points[i + 2], y2 = points[i + 3];
-		ortho.push(x2, y1);
-		ortho.push(x2, y2);
+
+		if (inverse) {
+			ortho.push(x1, y2);
+			ortho.push(x2, y2);
+		} else {
+			ortho.push(x2, y1);
+			ortho.push(x2, y2);
+		}
 	}
 	return ortho;
 }
@@ -983,8 +1003,8 @@ window.addEventListener('keydown', (e) => {
 			clipboard = Array.from(selectedGears).map(gear => ({
 				src: gear.findOne('.icon').image().src,
 				label: gear.findOne('Text').text(),
-				outCount: gear.find('.anchor').filter(a => a.fill() === '#e74c3c').length,
-				inCount: gear.find('.anchor').filter(a => a.fill() === '#3498db').length,
+				outCount: gear.find('.anchor').filter(a => a.oldColor === '#e74c3c').length,
+				inCount: gear.find('.anchor').filter(a => a.oldColor === '#3498db').length,
 				width: gear.findOne('.icon').getClientRect().width,
 				height: gear.findOne('.icon').getClientRect().height,
 				anchors: gear.find('.anchor').map(a => ({ x: a.x(), y: a.y(), color: a.fill() })),
@@ -1009,8 +1029,8 @@ window.addEventListener('keydown', (e) => {
 			clipboard = Array.from(selectedGears).map(gear => ({
 				src: gear.findOne('.icon').image().src,
 				label: gear.findOne('Text').text(),
-				outCount: gear.find('.anchor').filter(a => a.fill() === '#e74c3c').length,
-				inCount: gear.find('.anchor').filter(a => a.fill() === '#3498db').length,
+				outCount: gear.find('.anchor').filter(a => a.oldColor === '#e74c3c').length,
+				inCount: gear.find('.anchor').filter(a => a.oldColor === '#3498db').length,
 				width: gear.findOne('.icon').getClientRect().width,
 				height: gear.findOne('.icon').getClientRect().height
 			}));
@@ -1040,14 +1060,15 @@ function saveHistory() {
 			label: g.findOne('Text').text(),
 			src: g.findOne('.icon').image().src,
 			anchors: g.find('.anchor').map(a => ({ x: a.x(), y: a.y(), color: a.fill(), id: a.id() })),
-			inCount: g.find('.anchor').filter(a => a.fill() === '#3498db').length,
-			outCount: g.find('.anchor').filter(a => a.fill() === '#e74c3c').length,
+			inCount: g.find('.anchor').filter(a => a.oldColor === '#3498db').length,
+			outCount: g.find('.anchor').filter(a => a.oldColor === '#e74c3c').length,
 			width: g.findOne('.icon').width(),
 			height: g.findOne('.icon').height()
 		})),
 		cables: cables.map(c => ({
 			fromId: c.fromId, toId: c.toId, color: c.line.stroke(), label: c.label ? c.label.text() : "",
-			midPoints: c.handles.map(h => ({ x: h.x(), y: h.y() }))
+			midPoints: c.handles.map(h => ({ x: h.x(), y: h.y() })),
+			orthoInverse: c.orthoInverse
 		}))
 	};
 
@@ -1082,7 +1103,7 @@ function applyHistory(step) {
 			const sn = stage.findOne('#' + c.fromId);
 			const en = stage.findOne('#' + c.toId);
 			if (sn && en) {
-				createCable(sn, en, c.midPoints, c.color, c.label);
+				createCable(sn, en, c.midPoints, c.color, c.label, c.orthoInverse);
 			}
 		});
 
@@ -1144,3 +1165,30 @@ function setAllCategories(collapse) {
 		else g.classList.remove('collapsed');
 	});
 }
+
+// small lock to avoid immediate close when toggling the help modal
+let helpToggleLock = false;
+
+function showHelp() {
+	const help = document.getElementById('help-modal');
+	help.classList.toggle('hidden');
+	// prevent the immediate document click (which triggered the toggle)
+	helpToggleLock = true;
+	setTimeout(() => { helpToggleLock = false; }, 100);
+}
+
+function closeHelp() {
+	const help = document.getElementById('help-modal');
+	if (help && !help.classList.contains('hidden')) help.classList.add('hidden');
+}
+
+// Close help modal when clicking outside of it
+document.addEventListener('click', (e) => {
+	const help = document.getElementById('help-modal');
+	if (!help) return;
+	if (helpToggleLock) return;
+	if (help.classList.contains('hidden')) return;
+	if (!help.contains(e.target)) {
+		help.classList.add('hidden');
+	}
+});

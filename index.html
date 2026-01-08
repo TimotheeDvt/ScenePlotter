@@ -4,30 +4,34 @@
     <meta charset="UTF-8">
     <title>ProStage Plotter -- Timothée D.</title>
     <script src="https://unpkg.com/konva@10/konva.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="svgs.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="sidebar-left">
         <div class="panel">
-            <h3>Stage Plotter</h3>
+            <span style="display: flex; justify-content: space-between;">
+                <h3>Stage Plotter</h3>
+                <i class="fa fa-question-circle" style="font-size: 24px; cursor: pointer;" onclick="showHelp()"></i>
+            </span>
             <input type="text" id="projName">
             <div class="toggle-container">
-                <label style="margin:0; font-size: 10px;">Cables Orthogonaux</label>
+                <label style="margin:0; font-size: 10px;">Toggle ortho</label>
                 <label class="switch">
                     <input type="checkbox" id="orthoToggle" onchange="isOrtho = this.checked; updateAllCables();">
                     <span class="slider"></span>
                 </label>
             </div>
-            <button onclick="saveStage()">Exporter .stage</button>
-            <button style="background:#444" onclick="document.getElementById('loadInput').click()">Charger une scène</button>
+            <button onclick="saveStage()">Save .stage</button>
+            <button style="background:#444" onclick="document.getElementById('loadInput').click()">Load .stage</button>
             <input type="file" id="loadInput" style="display:none" onchange="loadStage(event)">
         </div>
         <div id="library-container" style="flex-grow: 1; overflow-y: auto;"> </div>
         <div class="panel" style="border-top: 1px solid #333; border-bottom: none; margin-top: auto;">
             <div style="display: flex; gap: 8px;">
-                <button style="background:#444; font-size: 10px; padding: 5px;" onclick="setAllCategories(true)">Tout cacher</button>
-                <button style="background:#444; font-size: 10px; padding: 5px;" onclick="setAllCategories(false)">Tout déplier</button>
+                <button style="background:#444; font-size: 10px; padding: 5px;" onclick="setAllCategories(true)">Collapse all</button>
+                <button style="background:#444; font-size: 10px; padding: 5px;" onclick="setAllCategories(false)">Expand all</button>
             </div>
         </div>
 </div>
@@ -36,29 +40,29 @@
     <div id="canvas-container"></div>
 
     <div id="sidebar-right" style="display: flex;">
-        <h3 id="prop-title">Propriétés du Canevas</h3>
+        <h3 id="prop-title">Stage properties</h3>
 
         <div id="canvas-props">
-            <label>Couleur de fond</label>
+            <label>Background color</label>
             <input type="color" id="canvas-bg-color" value="#333333" style="padding: 2px;">
             <div class="toggle-container">
-                <label style="margin:0; font-size: 10px;">Afficher la Grille</label>
+                <label style="margin:0; font-size: 10px;">Toggle grid</label>
                 <label class="switch">
                     <input type="checkbox" id="gridToggle" checked onchange="toggleGrid(this.checked)">
                     <span class="slider"></span>
                 </label>
             </div>
-            <label>Largeur (cm)</label>
+            <label>Width (cm)</label>
             <input type="number" id="canvas-width-cm" value="50">
-            <label>Hauteur (cm)</label>
+            <label>Height (cm)</label>
             <input type="number" id="canvas-height-cm" value="30">
-            <button style="background:#555; margin-top:10px" onclick="centerStage()">Recentrer la scène</button>
+            <button style="background:#555; margin-top:10px" onclick="centerStage()">Center stage</button>
         </div>
 
         <div id="gear-props" style="display:none;">
-            <label>Nom de l'élément</label>
+            <label>Element name</label>
             <input type="text" id="prop-label">
-            <label>Taille (cm)</label>
+            <label>Size (cm)</label>
             <input type="number" id="prop-size-cm" step="0.1">
             <div style="display: flex; gap: 10px;">
                 <div style="flex:1">
@@ -79,15 +83,39 @@
         </div>
 
         <div id="cable-props" style="display:none;">
-            <label>Label du câble</label>
+            <label>Cable name</label>
             <input type="text" id="cable-label">
-            <label>Couleur du câble</label>
+            <label>Cable color</label>
             <input type="color" id="cable-color-picker" style="padding: 2px;">
         </div>
 
         <div id="selection-actions" style="display:none;">
-            <button style="background:#e74c3c; margin-top:20px" id="btn-delete">Supprimer (Suppr)</button>
-            <button style="background:#444; margin-top:5px" onclick="deselectAll()">Désélectionner</button>
+            <button style="background:#e74c3c; margin-top:20px" id="btn-delete">Delete (Suppr)</button>
+            <button style="background:#444; margin-top:5px" onclick="deselectAll()">Deselect</button>
+        </div>
+    </div>
+
+    <div id="help-modal" class="hidden">
+        <div class="help-modal-content">
+            <span class="close" style="cursor: pointer;" onclick="closeHelp()">&times;</span>
+            <div id="help-content">
+                <div>
+                    <h3>Main actions</h3>
+                    <p><strong>Left Click</strong> : Select</p>
+                    <p><strong>Drag Left Click</strong> <i>on anchor point </i>: Move anchor point</p>
+                    <p><strong>Ctrl + Drag Left Click</strong> <i>from one anchor point to another</i> : Create cable</p>
+                    <p><strong>Double Click</strong> <i>on cable</i> : Create point</p>
+                    <p><strong>Right Click</strong> <i>on cable</i> : Inverse cable angle</p>
+                    <p><strong>Right Click</strong> <i>on cable point</i> : Remove point</p>
+                </div>
+                <div>
+                    <h3>Keyboard Shortcuts</h3>
+                    <p><strong>Ctrl + C</strong> : Copy</p>
+                    <p><strong>Ctrl + V</strong> : Paste</p>
+                    <p><strong>Ctrl + Z</strong> : Undo</p>
+                    <p><strong>Ctrl + Y</strong> : Redo</p>
+                </div>
+            </div>
         </div>
     </div>
 

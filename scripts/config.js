@@ -12,6 +12,9 @@ let canvasBackgroundColor = '#2a2a2a';
 let showGrid = true;
 let selectionStartPos = { x: 0, y: 0 };
 let helpToggleLock = false;
+let measurementLine = null;
+let measurementText = null;
+let isMeasuring = false;
 
 // Constants
 const PX_PER_CM = 15;
@@ -52,3 +55,22 @@ const dragLine = new Konva.Line({
 	listening: false
 });
 tempLayer.add(dragLine);
+
+measurementLine = new Konva.Line({
+	stroke: '#2ecc71',
+	strokeWidth: 2,
+	dash: [4, 4],
+	visible: false,
+	listening: false
+});
+
+measurementText = new Konva.Text({
+	fill: '#2ecc71',
+	fontSize: 14,
+	fontStyle: 'bold',
+	background: 'black',
+	visible: false,
+	listening: false
+});
+
+tempLayer.add(measurementLine, measurementText);

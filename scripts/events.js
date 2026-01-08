@@ -45,6 +45,15 @@ let selectionRect = new Konva.Rect({ fill: 'rgba(0, 122, 204, 0.3)', stroke: '#0
 tempLayer.add(selectionRect);
 
 stage.on('mousedown touchstart', (e) => {
+	if (e.evt.shiftKey && (e.target === stage || e.target.hasName('grid-background'))) {
+		isMeasuring = true;
+		const pos = stage.getRelativePointerPosition();
+		selectionStartPos = pos;
+		measurementLine.points([pos.x, pos.y, pos.x, pos.y]);
+		measurementLine.visible(true);
+		measurementText.visible(true);
+		return;
+	}
 	if (e.target === stage || e.target.hasName('grid-background')) {
 		const pos = stage.getRelativePointerPosition();
 		selectionStartPos = pos;
@@ -54,6 +63,20 @@ stage.on('mousedown touchstart', (e) => {
 });
 
 stage.on('mousemove touchmove', (e) => {
+	if (isMeasuring) {
+		const pos = stage.getRelativePointerPosition();
+		measurementLine.points([selectionStartPos.x, selectionStartPos.y, pos.x, pos.y]);
+
+		const dx = pos.x - selectionStartPos.x;
+		const dy = pos.y - selectionStartPos.y;
+		const distancePx = Math.sqrt(dx * dx + dy * dy);
+		const distanceCm = (distancePx / PX_PER_CM).toFixed(2);
+
+		measurementText.text(`${distanceCm} cm`);
+		measurementText.position({ x: pos.x + 10, y: pos.y + 10 });
+
+		tempLayer.batchDraw();
+	}
 	if (selectionRect.visible()) {
 		const pos = stage.getRelativePointerPosition();
 		selectionRect.setAttrs({
@@ -74,6 +97,13 @@ stage.on('mousemove touchmove', (e) => {
 });
 
 window.addEventListener('mouseup', (e) => {
+	if (isMeasuring) {
+		isMeasuring = false;
+		measurementLine.visible(false);
+		measurementText.visible(false);
+		tempLayer.draw();
+	}
+
 	if (selectionRect.visible()) {
 		selectionRect.visible(false);
 		const box = selectionRect.getClientRect();

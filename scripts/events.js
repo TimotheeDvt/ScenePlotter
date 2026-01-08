@@ -44,33 +44,56 @@ stage.container().addEventListener('mousedown', (e) => {
 let selectionRect = new Konva.Rect({ fill: 'rgba(0, 122, 204, 0.3)', stroke: '#007acc', strokeWidth: 1, visible: false, listening: false });
 tempLayer.add(selectionRect);
 
-stage.on('mousedown touchstart', (e) => {
-	if (e.evt.shiftKey && (e.target === stage || e.target.hasName('grid-background'))) {
-		isMeasuring = true;
+stage.on('mousedown', (e) => {
+
+	if (e.evt.shiftKey) {
 		const pos = stage.getRelativePointerPosition();
+		isMeasuring = true; // <--- Crucial : il manquait cette ligne
+
 		const local_snap_size = SNAP_SIZE / 2;
 		selectionStartPos = {
 			x: Math.round(pos.x / local_snap_size) * local_snap_size,
 			y: Math.round(pos.y / local_snap_size) * local_snap_size
 		};
 
-		measurementLine.points([selectionStartPos.x, selectionStartPos.y, selectionStartPos.x, selectionStartPos.y]);
+		// Préparation visuelle
+		measurementStartCircle.position(selectionStartPos).visible(true);
+		measurementEndCircle.position(selectionStartPos).visible(true);
+		measurementLine.points([selectionStartPos.x, selectionStartPos.y, selectionStartPos.x, selectionStartPos.y]).visible(true);
+		measurementText.text('0.00 cm').visible(true);
 
-		measurementStartCircle.position(selectionStartPos);
-    measurementStartCircle.visible(true);
-    measurementEndCircle.position(selectionStartPos);
-    measurementEndCircle.visible(true);
+		tempLayer.draw();
+		return; // On arrête ici pour ne pas déclencher la sélection
+	}
 
-		measurementLine.visible(true);
-		measurementText.visible(true);
-		return;
+	if (e.target !== stage) return;
+
+	const pos = stage.getRelativePointerPosition();
+
+	if (selectedGears.length > 0) {
+		const selectionBox = tr.getClientRect();
+
+		if (pos.x >= selectionBox.x && pos.x <= selectionBox.x + selectionBox.width &&
+			pos.y >= selectionBox.y && pos.y <= selectionBox.y + selectionBox.height) {
+			return;
+		}
 	}
-	if (e.target === stage || e.target.hasName('grid-background')) {
-		const pos = stage.getRelativePointerPosition();
-		selectionStartPos = pos;
-		selectionRect.setAttrs({ width: 0, height: 0, x: pos.x, y: pos.y, visible: true });
-		if (!e.evt.shiftKey && !e.evt.ctrlKey) deselectAll();
+
+	if (!e.evt.ctrlKey && !e.evt.shiftKey) {
+		selectedGears = [];
+		cables.forEach(c => {
+			c.isSelected = false;
+			c.line.strokeWidth(4);
+			if (c.handlesGroup) c.handlesGroup.visible(false);
+		});
+		tr.nodes([]);
+		updateSelectionUI();
 	}
+	selectionStartPos = pos;
+	selectionRect.visible(true);
+	selectionRect.width(0);
+	selectionRect.height(0);
+	tempLayer.draw();
 });
 
 stage.on('mousemove touchmove', (e) => {
@@ -119,26 +142,48 @@ window.addEventListener('mouseup', (e) => {
 	if (isMeasuring) {
 		isMeasuring = false;
 		measurementStartCircle.visible(false);
-    measurementEndCircle.visible(false);
+		measurementEndCircle.visible(false);
 		measurementLine.visible(false);
 		measurementText.visible(false);
 		tempLayer.draw();
 	}
-
 	if (selectionRect.visible()) {
 		selectionRect.visible(false);
 		const box = selectionRect.getClientRect();
-		const gears = stage.find('.gear');
-		let selected = gears.filter(g => Konva.Util.haveIntersection(box, g.getClientRect()));
 
-		if (selected.length > 0) {
-			if (e.shiftKey || e.ctrlKey) {
-				const currentIds = selectedGears.map(g => g.id());
-				selected.forEach(g => { if (!currentIds.includes(g.id())) selectedGears.push(g); });
-			} else { selectedGears = selected; }
-			updateSelectionUI();
+		const gears = stage.find('.gear');
+		const notes = stage.find('.free-text');
+
+		let newlySelectedElements = [...gears, ...notes].filter(el =>
+			Konva.Util.haveIntersection(box, el.getClientRect())
+		);
+
+		cables.forEach(c => {
+			const isIntersecting = Konva.Util.haveIntersection(box, c.line.getClientRect());
+
+			if (isIntersecting) {
+				c.isSelected = true;
+				c.line.strokeWidth(8);
+				if (c.handlesGroup) c.handlesGroup.visible(true);
+			} else if (!e.shiftKey && !e.ctrlKey) {
+				c.isSelected = false;
+				c.line.strokeWidth(4);
+				if (c.handlesGroup) c.handlesGroup.visible(false);
+			}
+		});
+
+		if (e.shiftKey || e.ctrlKey) {
+			newlySelectedElements.forEach(el => {
+				if (!selectedGears.includes(el)) selectedGears.push(el);
+			});
+		} else {
+			selectedGears = newlySelectedElements;
 		}
+
+		updateSelectionUI();
+
 		tempLayer.draw();
+		cableLayer.draw();
 	}
 	if (activeAnchor) {
 		const pos = stage.getRelativePointerPosition();
@@ -161,7 +206,18 @@ window.addEventListener('keydown', (e) => {
 	if (e.ctrlKey && e.key === 'v') pasteGears();
 	if (e.ctrlKey && e.key === 'x') cutGears();
 	if (e.ctrlKey && e.key === 'e') { e.preventDefault(); centerStage(); stage.batchDraw(); }
-	if (e.ctrlKey && e.key === 'a') { e.preventDefault(); selectedGears = stage.find('.gear'); updateSelectionUI(); }
+	if (e.ctrlKey && e.key === 'a') {
+		e.preventDefault();
+		selectedGears = [...stage.find('.gear'), ...stage.find('.free-text')];
+		cables.forEach(c => {
+			c.isSelected = true;
+			c.line.strokeWidth(8);
+			if (c.handlesGroup) c.handlesGroup.visible(true);
+		});
+
+		updateSelectionUI();
+		cableLayer.batchDraw();
+	}
 	if (e.ctrlKey && e.key === 'z') { if (historyStep > 0) applyHistory(--historyStep); }
 	if (e.ctrlKey && e.key === 'y') { if (historyStep < history.length - 1) applyHistory(++historyStep); }
 	if (e.key === 'Escape') {

@@ -13,12 +13,11 @@ function drawGrid() {
 	gridLayer.add(background);
 	if (!showGrid) { gridLayer.draw(); return; }
 
-	console.log(gridWidth, PX_PER_CM, gridWidth / PX_PER_CM);
-	for (let i = 0; i <= gridWidth / PX_PER_CM; i++) {
-		gridLayer.add(new Konva.Line({ points: [i * PX_PER_CM, 0, i * PX_PER_CM, gridHeight], stroke: '#444', strokeWidth: 1, listening: false }));
+	for (let i = 0; i <= gridWidth / GRID_CELL_SIZE; i++) {
+		gridLayer.add(new Konva.Line({ points: [i * GRID_CELL_SIZE, 0, i * GRID_CELL_SIZE, gridHeight], stroke: '#444', strokeWidth: 1, listening: false }));
 	}
-	for (let j = 0; j <= gridHeight / PX_PER_CM; j++) {
-		gridLayer.add(new Konva.Line({ points: [0, j * PX_PER_CM, gridWidth, j * PX_PER_CM], stroke: '#444', strokeWidth: 1, listening: false }));
+	for (let j = 0; j <= gridHeight / GRID_CELL_SIZE; j++) {
+		gridLayer.add(new Konva.Line({ points: [0, j * GRID_CELL_SIZE, gridWidth, j * GRID_CELL_SIZE], stroke: '#444', strokeWidth: 1, listening: false }));
 	}
 	gridLayer.draw();
 }
@@ -80,38 +79,44 @@ function selectCable(cableObj) {
 }
 
 function updateSelectionUI() {
-	tr.nodes(selectedGears);
+	const transformableNodes = selectedGears.filter(node =>
+		node.hasName('gear') || node.hasName('free-text')
+	);
+	tr.nodes(transformableNodes);
 	const gearProps = document.getElementById('gear-props');
 	const canvasProps = document.getElementById('canvas-props');
 	const selectionActions = document.getElementById('selection-actions');
 	const textProps = document.getElementById('text-props');
+	const cableProps = document.getElementById('cable-props');
 
-	[gearProps, canvasProps, textProps].forEach(p => { if (p) p.style.display = 'none'; });
+	[gearProps, canvasProps, textProps, cableProps, selectionActions].forEach(p => { if (p) p.style.display = 'none'; });
 
-	if (selectedGears.length > 0) {
-		canvasProps.style.display = 'none';
+	if (selectedGears.length > 0 || cables.some(c => c.isSelected)) {
 		selectionActions.style.display = 'block';
 		console.log(selectedGears.length, selectedGears[0])
-		if (selectedGears.length === 1 && selectedGears[0].hasName('gear')) {
-			const gear = selectedGears[0];
-			gearProps.style.display = 'block';
-			document.getElementById('prop-title').innerText = "Element Properties";
-			document.getElementById('prop-label').value = gear.findOne('Text').text();
-			document.getElementById('prop-size-cm').value = (gear.findOne('.icon').width() / PX_PER_CM).toFixed(1);
-			document.getElementById('prop-in').value = gear.find('.anchor').filter(a => a.oldColor === '#3498db').length;
-			document.getElementById('prop-out').value = gear.find('.anchor').filter(a => a.oldColor === '#e74c3c').length;
-		} else if (selectedGears.length === 1 && selectedGears[0].hasName('free-text')) {
-			textProps.style.display = 'block';
-			document.getElementById('prop-title').innerText = "Free Text Properties";
+		if (selectedGears.length === 1) {
+			if (selectedGears[0].hasName('gear')) {
+				const gear = selectedGears[0];
+				gearProps.style.display = 'block';
+				document.getElementById('prop-title').innerText = "Element Properties";
+				document.getElementById('prop-label').value = gear.findOne('Text').text();
+				document.getElementById('prop-size-cm').value = (gear.findOne('.icon').width() / PX_PER_CM).toFixed(1);
+				document.getElementById('prop-in').value = gear.find('.anchor').filter(a => a.oldColor === '#3498db').length;
+				document.getElementById('prop-out').value = gear.find('.anchor').filter(a => a.oldColor === '#e74c3c').length;
+			} else if (selectedGears[0].hasName('free-text')) {
+				textProps.style.display = 'block';
+				document.getElementById('prop-title').innerText = "Free Text Properties";
 
-			const note = selectedGears[0];
-			document.getElementById('note-text-input').value = note.text();
-			document.getElementById('note-color-picker').value = note.fill();
-			document.getElementById('note-size-input').value = note.fontSize();
-		}
-		else {
-			gearProps.style.display = 'none';
-			document.getElementById('prop-title').innerText = `${selectedGears.length} selected elements`;
+				const note = selectedGears[0];
+				document.getElementById('note-text-input').value = note.text();
+				document.getElementById('note-color-picker').value = note.fill();
+				document.getElementById('note-size-input').value = note.fontSize();
+			}
+		} else if (cables.filter(c => c.isSelected).length === 1 && selectedGears.length === 0) {
+			const selCable = cables.find(c => c.isSelected);
+			selectCable(selCable);
+		} else {
+			document.getElementById('prop-title').innerText = "Sélection multiple";
 		}
 	} else { deselectAll(); }
 }
@@ -264,6 +269,24 @@ document.getElementById('note-size-input').oninput = (e) => {
 	}
 };
 
+document.getElementById('prop-px-cm').onchange = (e) => {
+	PX_PER_CM = parseFloat(e.target.value);
+	updateCanvasSize();
+	saveHistory();
+};
+
+document.getElementById('prop-snap-size').onchange = (e) => {
+	SNAP_SIZE = parseInt(e.target.value);
+	drawGrid();
+	saveHistory();
+};
+
+document.getElementById('prop-grid-size').onchange = (e) => {
+	GRID_CELL_SIZE = parseInt(e.target.value) * PX_PER_CM;
+	drawGrid();
+	saveHistory();
+};
+
 // --- LIBRARY ---
 if (typeof SVG_LIBRARY !== 'undefined') {
 	const lib = document.getElementById('library-container');
@@ -383,8 +406,18 @@ function addNewNote(text = "Nouvelle note", x = 100, y = 100) {
 
 	note.on('click tap', (e) => {
 		e.cancelBubble = true;
-		deselectAll();
-		selectedGears = [note];
+		const isMulti = e.evt.shiftKey || e.evt.ctrlKey;
+
+		if (!isMulti) {
+			deselectAll();
+			selectedGears = [note];
+		} else {
+			if (selectedGears.includes(note)) {
+				selectedGears = selectedGears.filter(g => g !== note);
+			} else {
+				selectedGears.push(note);
+			}
+		}
 		updateSelectionUI();
 		mainLayer.draw();
 	});

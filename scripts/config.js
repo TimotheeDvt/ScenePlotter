@@ -17,8 +17,9 @@ let measurementText = null;
 let isMeasuring = false;
 
 // Constants
-const PX_PER_CM = 15;
-const SNAP_SIZE = 15;
+let PX_PER_CM = 15;
+let SNAP_SIZE = 15;
+let GRID_CELL_SIZE = 15;
 let gridWidth = 50 * PX_PER_CM;
 let gridHeight = 30 * PX_PER_CM;
 
@@ -42,7 +43,9 @@ const tr = new Konva.Transformer({
 	rotateAnchorOffset: 30,
 	borderStroke: '#007acc',
 	keepRatio: true,
-	enabledAnchors: ['top-left', 'top-right', 'bottom-left', 'bottom-right']
+	enabledAnchors: ['top-left', 'top-right', 'bottom-left', 'bottom-right'],
+	dragable: true,
+	shouldOverdrawWholeArea: true
 });
 mainLayer.add(tr);
 

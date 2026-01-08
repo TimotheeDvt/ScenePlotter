@@ -111,9 +111,24 @@ stage.on('mousemove touchmove', (e) => {
 		const dx = snappedX - selectionStartPos.x;
 		const dy = snappedY - selectionStartPos.y;
 		const distancePx = Math.sqrt(dx * dx + dy * dy);
-		const distanceCm = (distancePx / PX_PER_CM).toFixed(2);
+		const distanceCm = (distancePx / PX_PER_CM);
+		let length;
+		const lengthCm = parseFloat(distanceCm);
+		if (lengthCm >= 100) {
+			const meters = Math.floor(lengthCm / 100);
+			const centimeters = Math.round(lengthCm % 100);
+			if (meters > 0 && centimeters > 0) {
+				length = `${meters} m ${centimeters} cm`;
+			} else if (meters > 0) {
+				length = `${meters} m`;
+			} else {
+				length = `${centimeters} cm`;
+			}
+		} else {
+			length = `${Math.round(lengthCm)} cm`;
+		}
 
-		measurementText.text(`${distanceCm} cm`);
+		measurementText.text(length);
 		measurementText.position({ x: snappedX + 100, y: snappedY - 150 });
 
 		tempLayer.batchDraw();

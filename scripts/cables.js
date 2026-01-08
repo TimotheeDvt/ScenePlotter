@@ -56,7 +56,15 @@ function addHandleToCable(cableObj, group, x, y, redraw, isInit = false) {
 		const length = calculateCableLength(cableObj);
 		const lengthInput = document.getElementById('cable-length');
 		if (lengthInput) {
-			lengthInput.value = length + " cm";
+			console.log("1");
+			const lengthCm = parseFloat(length);
+			if (lengthCm >= 100) {
+				const meters = Math.floor(lengthCm / 100);
+				const centimeters = Math.round(lengthCm % 100);
+				lengthInput.value = `${meters} m ${centimeters} cm`;
+			} else {
+				lengthInput.value = `${Math.round(lengthCm)} cm`;
+			}
 		}
 		redraw();
 	});
@@ -100,7 +108,15 @@ function cableRedraw(cableObj, line, isOrtho) {
 	if (selectedCable === cableObj) {
 		const lengthInput = document.getElementById('cable-length');
 		if (lengthInput) {
-			lengthInput.value = calculateCableLength(cableObj) + " cm";
+			const length = calculateCableLength(cableObj);
+			const lengthCm = parseFloat(length);
+			if (lengthCm >= 100) {
+				const meters = Math.floor(lengthCm / 100);
+				const centimeters = Math.round(lengthCm % 100);
+				lengthInput.value = `${meters} m ${centimeters} cm`;
+			} else {
+				lengthInput.value = `${Math.round(lengthCm)} cm`;
+			}
 		}
 	}
 }

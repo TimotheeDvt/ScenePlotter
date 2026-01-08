@@ -73,7 +73,14 @@ function selectCable(cableObj) {
 	const length = calculateCableLength(cableObj);
 	const lengthInput = document.getElementById('cable-length');
 	if (lengthInput) {
-		lengthInput.value = length + " cm";
+		const lengthCm = parseFloat(length);
+		if (lengthCm >= 100) {
+			const meters = Math.floor(lengthCm / 100);
+			const centimeters = Math.round(lengthCm % 100);
+			lengthInput.value = `${meters} m ${centimeters} cm`;
+		} else {
+			lengthInput.value = `${Math.round(lengthCm)} cm`;
+		}
 	}
 	cableLayer.draw(); tempLayer.draw();
 }

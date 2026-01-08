@@ -24,7 +24,7 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", outCount
 function createSingleAnchor(group, x, y, color, id) {
 	const img = group.findOne('.icon');
 	const c = new Konva.Circle({
-		x: x, y: y, radius: 8, fill: color, opacity: 0,
+		x: x, y: y, radius: 80, fill: color, opacity: 0,
 		draggable: true, name: 'anchor', id: id || group.id() + '-a' + Math.random()
 	});
 	c.oldColor = color;
@@ -37,7 +37,7 @@ function createSingleAnchor(group, x, y, color, id) {
 
 function createVirtualAnchor(group, x, y) {
 	group.add(new Konva.Circle({
-		x, y, radius: 4, fill: '#666', opacity: 0.5,
+		x, y, radius: 20, fill: '#666', opacity: 0.5,
 		name: 'virtual-anchor', listening: false
 	}));
 }
@@ -56,7 +56,7 @@ function addUI(group, nativeImg, labelText, width, height) {
 	});
 
 	const label = new Konva.Text({
-		text: labelText, fontSize: 12, fill: 'white', y: finalWidth + 5,
+		text: labelText, fontSize: 12, fill: 'white', y: finalWidth + 50,
 		width: finalWidth, align: 'center', fontStyle: 'bold',
 		listening: false, visible: labelText !== ""
 	});

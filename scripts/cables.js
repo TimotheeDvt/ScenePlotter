@@ -4,12 +4,12 @@ function updateAllCables() {
 }
 
 function createCable(startAnchor, endAnchor, midPoints = [], color = null, labelTxt = "", orthoInverse = false) {
-	const line = new Konva.Line({ strokeWidth: 4, lineCap: 'round', lineJoin: 'round', hitStrokeWidth: 20 });
+	const line = new Konva.Line({ strokeWidth: 40, lineCap: 'round', lineJoin: 'round', hitStrokeWidth: 200 });
 	const handlesGroup = new Konva.Group({ visible: false });
 	const cableObj = { line, fromId: startAnchor.id(), toId: endAnchor.id(), handles: [], isSelected: false, label: null, orthoInverse };
 
 	if (labelTxt) {
-		cableObj.label = new Konva.Text({ text: labelTxt, fontSize: 11, fill: 'white', fontStyle: 'italic' });
+		cableObj.label = new Konva.Text({ text: labelTxt, fontSize: 110, fill: 'white', fontStyle: 'italic' });
 		cableLayer.add(cableObj.label);
 	}
 
@@ -42,7 +42,7 @@ function addHandleToCable(cableObj, group, x, y, redraw, isInit = false) {
 	const h = new Konva.Circle({
 		x: Math.round(x / SNAP_SIZE) * SNAP_SIZE,
 		y: Math.round(y / SNAP_SIZE) * SNAP_SIZE,
-		radius: 6, fill: '#f1c40f', stroke: 'white', strokeWidth: 1, draggable: true
+		radius: 60, fill: '#f1c40f', stroke: 'white', strokeWidth: 10, draggable: true
 	});
 
 	h.on('dragmove', () => {

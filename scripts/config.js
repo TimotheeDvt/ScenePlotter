@@ -19,9 +19,9 @@ let isMeasuring = false;
 // Constants
 let PX_PER_CM = 15;
 let SNAP_SIZE = 15;
-let GRID_CELL_SIZE = 15;
-let gridWidth = 50 * PX_PER_CM;
-let gridHeight = 30 * PX_PER_CM;
+let GRID_CELL_SIZE = 20 * PX_PER_CM;
+let gridWidth = 600 * PX_PER_CM;
+let gridHeight = 400 * PX_PER_CM;
 
 // Konva Setup
 const container = document.getElementById('canvas-container');
@@ -52,8 +52,8 @@ mainLayer.add(tr);
 // Drag line for cable creation
 const dragLine = new Konva.Line({
 	stroke: '#ffffff',
-	strokeWidth: 2,
-	dash: [5, 5],
+	strokeWidth: 20,
+	dash: [40, 40],
 	visible: false,
 	listening: false
 });
@@ -61,15 +61,15 @@ tempLayer.add(dragLine);
 
 measurementLine = new Konva.Line({
 	stroke: '#2ecc71',
-	strokeWidth: 2,
-	dash: [4, 4],
+	strokeWidth: 20,
+	dash: [40, 40],
 	visible: false,
 	listening: false
 });
 
 measurementText = new Konva.Text({
 	fill: '#2ecc71',
-	fontSize: 14,
+	fontSize: 140,
 	fontStyle: 'bold',
 	background: 'black',
 	visible: false,
@@ -77,14 +77,14 @@ measurementText = new Konva.Text({
 });
 
 measurementStartCircle = new Konva.Circle({
-	radius: 3,
+	radius: 30,
 	fill: '#2ecc71',
 	visible: false,
 	listening: false
 });
 
 measurementEndCircle = new Konva.Circle({
-	radius: 3,
+	radius: 30,
 	fill: '#2ecc71',
 	visible: false,
 	listening: false

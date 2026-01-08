@@ -14,10 +14,10 @@ function drawGrid() {
 	if (!showGrid) { gridLayer.draw(); return; }
 
 	for (let i = 0; i <= gridWidth / GRID_CELL_SIZE; i++) {
-		gridLayer.add(new Konva.Line({ points: [i * GRID_CELL_SIZE, 0, i * GRID_CELL_SIZE, gridHeight], stroke: '#444', strokeWidth: 1, listening: false }));
+		gridLayer.add(new Konva.Line({ points: [i * GRID_CELL_SIZE, 0, i * GRID_CELL_SIZE, gridHeight], stroke: '#444', strokeWidth: GRID_CELL_SIZE / 20, listening: false }));
 	}
 	for (let j = 0; j <= gridHeight / GRID_CELL_SIZE; j++) {
-		gridLayer.add(new Konva.Line({ points: [0, j * GRID_CELL_SIZE, gridWidth, j * GRID_CELL_SIZE], stroke: '#444', strokeWidth: 1, listening: false }));
+		gridLayer.add(new Konva.Line({ points: [0, j * GRID_CELL_SIZE, gridWidth, j * GRID_CELL_SIZE], stroke: '#444', strokeWidth: GRID_CELL_SIZE / 20, listening: false }));
 	}
 	gridLayer.draw();
 }
@@ -60,7 +60,7 @@ function selectCable(cableObj) {
 	deselectAll();
 	selectedCable = cableObj;
 	cableObj.isSelected = true;
-	cableObj.line.strokeWidth(8);
+	cableObj.line.strokeWidth(80);
 	if (cableObj.handlesGroup) cableObj.handlesGroup.visible(true);
 
 	document.getElementById('canvas-props').style.display = 'none';
@@ -93,7 +93,6 @@ function updateSelectionUI() {
 
 	if (selectedGears.length > 0 || cables.some(c => c.isSelected)) {
 		selectionActions.style.display = 'block';
-		console.log(selectedGears.length, selectedGears[0])
 		if (selectedGears.length === 1) {
 			if (selectedGears[0].hasName('gear')) {
 				const gear = selectedGears[0];
@@ -123,7 +122,7 @@ function updateSelectionUI() {
 
 function deselectAll() {
 	tr.nodes([]); selectedGears = []; selectedCable = null;
-	cables.forEach(c => { c.isSelected = false; c.line.strokeWidth(4); if (c.handlesGroup) c.handlesGroup.visible(false); });
+	cables.forEach(c => { c.isSelected = false; c.line.strokeWidth(40); if (c.handlesGroup) c.handlesGroup.visible(false); });
 	document.getElementById('canvas-props').style.display = 'block';
 	document.getElementById('gear-props').style.display = 'none';
 	document.getElementById('cable-props').style.display = 'none';
@@ -225,7 +224,7 @@ document.getElementById('prop-size-cm').oninput = (e) => {
 		const img = gear.findOne('.icon'), text = gear.findOne('Text');
 		const ratio = img.height() / img.width();
 		img.width(val); img.height(val * ratio);
-		text.width(val); text.y(val + 5);
+		text.width(val); text.y(val + 50);
 		updateIO();
 	}
 };
@@ -269,17 +268,17 @@ document.getElementById('note-size-input').oninput = (e) => {
 	}
 };
 
-document.getElementById('prop-px-cm').onchange = (e) => {
-	PX_PER_CM = parseFloat(e.target.value);
-	updateCanvasSize();
-	saveHistory();
-};
+// document.getElementById('prop-px-cm').onchange = (e) => {
+// 	PX_PER_CM = parseFloat(e.target.value);
+// 	updateCanvasSize();
+// 	saveHistory();
+// };
 
-document.getElementById('prop-snap-size').onchange = (e) => {
-	SNAP_SIZE = parseInt(e.target.value);
-	drawGrid();
-	saveHistory();
-};
+// document.getElementById('prop-snap-size').onchange = (e) => {
+// 	SNAP_SIZE = parseInt(e.target.value);
+// 	drawGrid();
+// 	saveHistory();
+// };
 
 document.getElementById('prop-grid-size').onchange = (e) => {
 	GRID_CELL_SIZE = parseInt(e.target.value) * PX_PER_CM;
@@ -304,7 +303,18 @@ if (typeof SVG_LIBRARY !== 'undefined') {
 			const item = document.createElement('div'); item.className = 'bank-item';
 			const path = `svgs/${f.path || f}`;
 			item.innerHTML = `<img src="${path}"><span>${f.name || f}</span>`;
-			item.onclick = () => addEquipment(path, 150, 150, null, "", f.outputNbAnchors ?? 2, f.inputNbAnchors ?? 2, null, f.width ?? 80, f.height ?? 80);
+			item.onclick = () => addEquipment(
+				path,
+				150,
+				150,
+				null,
+				"",
+				f.outputNbAnchors ?? 2,
+				f.inputNbAnchors ?? 2,
+				null,
+				(f.width ?? 80) * PX_PER_CM,
+				(f.height ?? 80) * PX_PER_CM
+			);
 			grid.appendChild(item);
 		});
 		lib.appendChild(title); lib.appendChild(grid);
@@ -322,7 +332,7 @@ function getRectPos(index, total, width, height) {
 	const step = perimeter / total;
 	const dist = (index * step + height + width * 1.5) % perimeter;
 	if (dist <= width) return { x: dist, y: 0 };
-	if (dist <= width + height) return { x: width, y: dist - height };
+	if (dist <= width + height) return { x: width, y: dist - width };
 	if (dist <= width * 2 + height) return { x: width - (dist - (width + height)), y: height };
 	return { x: 0, y: height - (dist - (width * 2 + height)) };
 }

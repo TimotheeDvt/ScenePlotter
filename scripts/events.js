@@ -11,7 +11,7 @@ tr.on('transform', () => {
 		}
 
 		img.width(newWidth); img.height(newHeight); img.scaleX(1); img.scaleY(1);
-		text.width(newWidth); text.y(newHeight + 5);
+		text.width(newWidth); text.y(newHeight + 50);
 	});
 	updateIO();
 	updateAllCables();
@@ -83,7 +83,7 @@ stage.on('mousedown', (e) => {
 		selectedGears = [];
 		cables.forEach(c => {
 			c.isSelected = false;
-			c.line.strokeWidth(4);
+			c.line.strokeWidth(40);
 			if (c.handlesGroup) c.handlesGroup.visible(false);
 		});
 		tr.nodes([]);
@@ -114,7 +114,7 @@ stage.on('mousemove touchmove', (e) => {
 		const distanceCm = (distancePx / PX_PER_CM).toFixed(2);
 
 		measurementText.text(`${distanceCm} cm`);
-		measurementText.position({ x: snappedX + 10, y: snappedY + 10 });
+		measurementText.position({ x: snappedX + 100, y: snappedY - 150 });
 
 		tempLayer.batchDraw();
 		return;
@@ -163,11 +163,11 @@ window.addEventListener('mouseup', (e) => {
 
 			if (isIntersecting) {
 				c.isSelected = true;
-				c.line.strokeWidth(8);
+				c.line.strokeWidth(80);
 				if (c.handlesGroup) c.handlesGroup.visible(true);
 			} else if (!e.shiftKey && !e.ctrlKey) {
 				c.isSelected = false;
-				c.line.strokeWidth(4);
+				c.line.strokeWidth(40);
 				if (c.handlesGroup) c.handlesGroup.visible(false);
 			}
 		});
@@ -211,7 +211,7 @@ window.addEventListener('keydown', (e) => {
 		selectedGears = [...stage.find('.gear'), ...stage.find('.free-text')];
 		cables.forEach(c => {
 			c.isSelected = true;
-			c.line.strokeWidth(8);
+			c.line.strokeWidth(80);
 			if (c.handlesGroup) c.handlesGroup.visible(true);
 		});
 

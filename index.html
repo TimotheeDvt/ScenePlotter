@@ -27,6 +27,7 @@
             <button style="background:#444" onclick="document.getElementById('loadInput').click()">Load .stage</button>
             <input type="file" id="loadInput" style="display:none" onchange="loadStage(event)">
         </div>
+        <button style="background:#8e44ad" onclick="addNewNote()">Ajouter une Note</button>
         <div id="library-container" style="flex-grow: 1; overflow-y: auto;"> </div>
         <div class="panel" style="border-top: 1px solid #333; border-bottom: none; margin-top: auto;">
             <div style="display: flex; gap: 8px;">
@@ -87,16 +88,26 @@
             <input type="text" id="cable-label">
             <label>Cable color</label>
             <input type="color" id="cable-color-picker" style="padding: 2px;">
+            <div class="prop-group">
+                <label>Total length</label>
+                <input type="text" id="cable-length" readonly style="background-color: #333; color: #2ecc71; font-weight: bold; border: 1px solid #444;">
+            </div>
+        </div>
+
+        <div id="text-props" style="display:none;">
+            <label>Texte de la note</label>
+            <textarea id="note-text-input" rows="3" style="width:100%; background:#3c3c3c; color:white; border:1px solid #555;"></textarea>
+
+            <label>Couleur du texte</label>
+            <input type="color" id="note-color-picker">
+
+            <label>Taille de police</label>
+            <input type="number" id="note-size-input" min="10" max="100">
         </div>
 
         <div id="selection-actions" style="display:none;">
             <button style="background:#e74c3c; margin-top:20px" id="btn-delete">Delete (Suppr)</button>
             <button style="background:#444; margin-top:5px" onclick="deselectAll()">Deselect</button>
-        </div>
-        <div class="prop-group">
-            <label>Longueur totale :</label>
-            <input type="text" id="cable-length" readonly 
-                style="background-color: #333; color: #2ecc71; font-weight: bold; border: 1px solid #444;">
         </div>
     </div>
 

@@ -13,6 +13,9 @@ function saveStage() {
 			fromId: c.fromId, toId: c.toId, color: c.line.stroke(), label: c.label ? c.label.text() : "",
 			midPoints: c.handles.map(h => ({ x: h.x(), y: h.y() })), orthoInverse: c.orthoInverse
 		})),
+		notes: mainLayer.getChildren().filter(c => c.hasName('free-text')).map(n => ({
+			x: n.x(), y: n.y(), text: n.text(), fontSize: n.fontSize()
+	})),
 		isOrtho
 	};
 	const link = document.createElement('a');
@@ -30,6 +33,9 @@ function loadStage(event) {
 		cables.forEach(c => { c.line.destroy(); c.handlesGroup.destroy(); if (c.label) c.label.destroy(); });
 		cables = [];
 		isOrtho = data.isOrtho;
+		if (data.notes) {
+			data.notes.forEach(n => addNewNote(n.text, n.x, n.y));
+		}
 		document.getElementById('orthoToggle').checked = isOrtho;
 		data.gear.forEach(g => addEquipment("svgs/" + g.src, g.x, g.y, g.id, g.label, g.outCount, g.inCount, g.anchors, g.width, g.height));
 		setTimeout(() => {
@@ -56,7 +62,11 @@ function saveHistory() {
 		cables: cables.map(c => ({
 			fromId: c.fromId, toId: c.toId, color: c.line.stroke(), label: c.label ? c.label.text() : "",
 			midPoints: c.handles.map(h => ({ x: h.x(), y: h.y() })), orthoInverse: c.orthoInverse
-		}))
+		})),
+		notes: mainLayer.getChildren().filter(c => c.hasName('free-text')).map(n => ({
+			x: n.x(), y: n.y(), text: n.text(), fontSize: n.fontSize()
+		})),
+		isOrtho
 	};
 	history.push(JSON.stringify(state));
 	historyStep++;
@@ -69,6 +79,7 @@ function applyHistory(step) {
 	mainLayer.getChildren().filter(c => c.hasName('gear')).forEach(g => g.destroy());
 	cables.forEach(c => { c.line.destroy(); c.handlesGroup.destroy(); if (c.label) c.label.destroy(); });
 	cables = [];
+	mainLayer.getChildren().filter(c => c.hasName('free-text')).forEach(n => n.destroy());
 	state.gear.forEach(g => addEquipment(g.src, g.x, g.y, g.id, g.label, g.outCount, g.inCount, g.anchors, g.width, g.height));
 	setTimeout(() => {
 		state.cables.forEach(c => {
@@ -78,4 +89,8 @@ function applyHistory(step) {
 		isApplyingHistory = false;
 		mainLayer.draw(); cableLayer.draw();
 	}, 150);
+	isOrtho = state.isOrtho;
+	if (state.notes) {
+		state.notes.forEach(n => addNewNote(n.text, n.x, n.y));
+	}
 }

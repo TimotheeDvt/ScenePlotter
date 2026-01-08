@@ -68,7 +68,7 @@ function selectCable(cableObj) {
 	document.getElementById('gear-props').style.display = 'none';
 	document.getElementById('cable-props').style.display = 'block';
 	document.getElementById('selection-actions').style.display = 'block';
-	document.getElementById('prop-title').innerText = "Propriétés Câble";
+	document.getElementById('prop-title').innerText = "Cable Properties";
 	document.getElementById('cable-label').value = cableObj.label ? cableObj.label.text() : "";
 	document.getElementById('cable-color-picker').value = cableObj.line.stroke();
 	const length = calculateCableLength(cableObj);
@@ -84,21 +84,34 @@ function updateSelectionUI() {
 	const gearProps = document.getElementById('gear-props');
 	const canvasProps = document.getElementById('canvas-props');
 	const selectionActions = document.getElementById('selection-actions');
+	const textProps = document.getElementById('text-props');
+
+	[gearProps, canvasProps, textProps].forEach(p => { if (p) p.style.display = 'none'; });
 
 	if (selectedGears.length > 0) {
 		canvasProps.style.display = 'none';
 		selectionActions.style.display = 'block';
-		if (selectedGears.length === 1) {
+		console.log(selectedGears.length, selectedGears[0])
+		if (selectedGears.length === 1 && selectedGears[0].hasName('gear')) {
 			const gear = selectedGears[0];
 			gearProps.style.display = 'block';
-			document.getElementById('prop-title').innerText = "Propriétés Élément";
+			document.getElementById('prop-title').innerText = "Element Properties";
 			document.getElementById('prop-label').value = gear.findOne('Text').text();
 			document.getElementById('prop-size-cm').value = (gear.findOne('.icon').width() / PX_PER_CM).toFixed(1);
 			document.getElementById('prop-in').value = gear.find('.anchor').filter(a => a.oldColor === '#3498db').length;
 			document.getElementById('prop-out').value = gear.find('.anchor').filter(a => a.oldColor === '#e74c3c').length;
-		} else {
+		} else if (selectedGears.length === 1 && selectedGears[0].hasName('free-text')) {
+			textProps.style.display = 'block';
+			document.getElementById('prop-title').innerText = "Free Text Properties";
+
+			const note = selectedGears[0];
+			document.getElementById('note-text-input').value = note.text();
+			document.getElementById('note-color-picker').value = note.fill();
+			document.getElementById('note-size-input').value = note.fontSize();
+		}
+		else {
 			gearProps.style.display = 'none';
-			document.getElementById('prop-title').innerText = `${selectedGears.length} Éléments sélectionnés`;
+			document.getElementById('prop-title').innerText = `${selectedGears.length} selected elements`;
 		}
 	} else { deselectAll(); }
 }
@@ -110,7 +123,7 @@ function deselectAll() {
 	document.getElementById('gear-props').style.display = 'none';
 	document.getElementById('cable-props').style.display = 'none';
 	document.getElementById('selection-actions').style.display = 'none';
-	document.getElementById('prop-title').innerText = "Propriétés du Canevas";
+	document.getElementById('prop-title').innerText = "Stage properties";
 	cableLayer.draw(); tempLayer.draw();
 }
 
@@ -136,6 +149,13 @@ function executeDelete() {
 		if (sn) sn.fill(sn.oldColor); if (en) en.fill(en.oldColor);
 		selectedCable.line.destroy(); selectedCable.handlesGroup.destroy(); if (selectedCable.label) selectedCable.label.destroy();
 		cables = cables.filter(c => c !== selectedCable);
+	} else {
+		const selectedNodes = tr.nodes();
+		selectedNodes.forEach(node => {
+			if (node.hasName('free-text')) {
+				node.destroy();
+			}
+		});
 	}
 	deselectAll(); saveHistory();
 }
@@ -220,6 +240,30 @@ document.getElementById('cable-color-picker').oninput = (e) => {
 	if (sn && en) { sn.fill(e.target.value); en.fill(e.target.value); selectedCable.redraw(); mainLayer.draw(); }
 };
 
+document.getElementById('note-text-input').oninput = (e) => {
+	if (selectedGears.length === 1 && selectedGears[0].hasName('free-text')) {
+		selectedGears[0].text(e.target.value);
+		mainLayer.batchDraw();
+		saveHistory();
+	}
+};
+
+document.getElementById('note-color-picker').oninput = (e) => {
+	if (selectedGears.length === 1 && selectedGears[0].hasName('free-text')) {
+		selectedGears[0].fill(e.target.value);
+		mainLayer.batchDraw();
+		saveHistory();
+	}
+};
+
+document.getElementById('note-size-input').oninput = (e) => {
+	if (selectedGears.length === 1 && selectedGears[0].hasName('free-text')) {
+		selectedGears[0].fontSize(parseInt(e.target.value));
+		mainLayer.batchDraw();
+		saveHistory();
+	}
+};
+
 // --- LIBRARY ---
 if (typeof SVG_LIBRARY !== 'undefined') {
 	const lib = document.getElementById('library-container');
@@ -301,3 +345,53 @@ document.addEventListener('click', (e) => {
 		help.classList.add('hidden');
 	}
 });
+
+function setAllCategories(collapse) {
+	const titles = document.querySelectorAll('.category-title');
+	const grids = document.querySelectorAll('.bank-grid');
+
+	titles.forEach(t => {
+		if (collapse) t.classList.add('collapsed');
+		else t.classList.remove('collapsed');
+	});
+
+	grids.forEach(g => {
+		if (collapse) g.classList.add('collapsed');
+		else g.classList.remove('collapsed');
+	});
+}
+
+function addNewNote(text = "Nouvelle note", x = 100, y = 100) {
+	const note = new Konva.Text({
+		text: text,
+		x: x,
+		y: y,
+		fontSize: 16,
+		fontFamily: 'Segoe UI',
+		fill: '#f1c40f',
+		fontStyle: 'bold',
+		draggable: true,
+		name: 'free-text'
+	});
+
+	note.on('dragmove', () => {
+		note.position({
+			x: Math.round(note.x() / SNAP_SIZE) * SNAP_SIZE,
+			y: Math.round(note.y() / SNAP_SIZE) * SNAP_SIZE
+		});
+	});
+
+	note.on('click tap', (e) => {
+		e.cancelBubble = true;
+		deselectAll();
+		selectedGears = [note];
+		updateSelectionUI();
+		mainLayer.draw();
+	});
+
+	mainLayer.add(note);
+	selectedGears = [note];
+	updateSelectionUI();
+	mainLayer.draw();
+	saveHistory();
+}

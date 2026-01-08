@@ -18,7 +18,7 @@ let isMeasuring = false;
 
 // Constants
 const PX_PER_CM = 15;
-const SNAP_SIZE = 30;
+const SNAP_SIZE = 15;
 let gridWidth = 50 * PX_PER_CM;
 let gridHeight = 30 * PX_PER_CM;
 

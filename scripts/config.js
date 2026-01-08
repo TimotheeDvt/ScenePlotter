@@ -18,7 +18,7 @@ let isMeasuring = false;
 
 // Constants
 const PX_PER_CM = 15;
-const SNAP_SIZE = 25;
+const SNAP_SIZE = 30;
 let gridWidth = 50 * PX_PER_CM;
 let gridHeight = 30 * PX_PER_CM;
 
@@ -72,5 +72,21 @@ measurementText = new Konva.Text({
 	visible: false,
 	listening: false
 });
+
+measurementStartCircle = new Konva.Circle({
+	radius: 3,
+	fill: '#2ecc71',
+	visible: false,
+	listening: false
+});
+
+measurementEndCircle = new Konva.Circle({
+	radius: 3,
+	fill: '#2ecc71',
+	visible: false,
+	listening: false
+});
+
+tempLayer.add(measurementStartCircle, measurementEndCircle);
 
 tempLayer.add(measurementLine, measurementText);

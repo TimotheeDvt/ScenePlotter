@@ -48,8 +48,19 @@ stage.on('mousedown touchstart', (e) => {
 	if (e.evt.shiftKey && (e.target === stage || e.target.hasName('grid-background'))) {
 		isMeasuring = true;
 		const pos = stage.getRelativePointerPosition();
-		selectionStartPos = pos;
-		measurementLine.points([pos.x, pos.y, pos.x, pos.y]);
+		const local_snap_size = SNAP_SIZE / 2;
+		selectionStartPos = {
+			x: Math.round(pos.x / local_snap_size) * local_snap_size,
+			y: Math.round(pos.y / local_snap_size) * local_snap_size
+		};
+
+		measurementLine.points([selectionStartPos.x, selectionStartPos.y, selectionStartPos.x, selectionStartPos.y]);
+
+		measurementStartCircle.position(selectionStartPos);
+    measurementStartCircle.visible(true);
+    measurementEndCircle.position(selectionStartPos);
+    measurementEndCircle.visible(true);
+
 		measurementLine.visible(true);
 		measurementText.visible(true);
 		return;
@@ -65,17 +76,25 @@ stage.on('mousedown touchstart', (e) => {
 stage.on('mousemove touchmove', (e) => {
 	if (isMeasuring) {
 		const pos = stage.getRelativePointerPosition();
-		measurementLine.points([selectionStartPos.x, selectionStartPos.y, pos.x, pos.y]);
 
-		const dx = pos.x - selectionStartPos.x;
-		const dy = pos.y - selectionStartPos.y;
+		const local_snap_size = SNAP_SIZE / 2;
+		const snappedX = Math.round(pos.x / local_snap_size) * local_snap_size;
+		const snappedY = Math.round(pos.y / local_snap_size) * local_snap_size;
+
+		measurementLine.points([selectionStartPos.x, selectionStartPos.y, snappedX, snappedY]);
+
+		measurementEndCircle.position({ x: snappedX, y: snappedY });
+
+		const dx = snappedX - selectionStartPos.x;
+		const dy = snappedY - selectionStartPos.y;
 		const distancePx = Math.sqrt(dx * dx + dy * dy);
 		const distanceCm = (distancePx / PX_PER_CM).toFixed(2);
 
 		measurementText.text(`${distanceCm} cm`);
-		measurementText.position({ x: pos.x + 10, y: pos.y + 10 });
+		measurementText.position({ x: snappedX + 10, y: snappedY + 10 });
 
 		tempLayer.batchDraw();
+		return;
 	}
 	if (selectionRect.visible()) {
 		const pos = stage.getRelativePointerPosition();
@@ -99,6 +118,8 @@ stage.on('mousemove touchmove', (e) => {
 window.addEventListener('mouseup', (e) => {
 	if (isMeasuring) {
 		isMeasuring = false;
+		measurementStartCircle.visible(false);
+    measurementEndCircle.visible(false);
 		measurementLine.visible(false);
 		measurementText.visible(false);
 		tempLayer.draw();
@@ -139,11 +160,14 @@ window.addEventListener('keydown', (e) => {
 	if (e.ctrlKey && e.key === 'c') copyGears();
 	if (e.ctrlKey && e.key === 'v') pasteGears();
 	if (e.ctrlKey && e.key === 'x') cutGears();
-	// ctrl + e => center stage
 	if (e.ctrlKey && e.key === 'e') { e.preventDefault(); centerStage(); stage.batchDraw(); }
 	if (e.ctrlKey && e.key === 'a') { e.preventDefault(); selectedGears = stage.find('.gear'); updateSelectionUI(); }
 	if (e.ctrlKey && e.key === 'z') { if (historyStep > 0) applyHistory(--historyStep); }
 	if (e.ctrlKey && e.key === 'y') { if (historyStep < history.length - 1) applyHistory(++historyStep); }
+	if (e.key === 'Escape') {
+		const help = document.getElementById('help-modal');
+		if (help && !help.classList.contains('hidden')) help.classList.add('hidden');
+	}
 });
 
 stage.on('click tap', (e) => { if (e.target === stage) deselectAll(); });

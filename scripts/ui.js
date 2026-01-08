@@ -13,11 +13,12 @@ function drawGrid() {
 	gridLayer.add(background);
 	if (!showGrid) { gridLayer.draw(); return; }
 
-	for (let i = 0; i <= gridWidth / 50; i++) {
-		gridLayer.add(new Konva.Line({ points: [i * 50, 0, i * 50, gridHeight], stroke: '#444', strokeWidth: 1, listening: false }));
+	console.log(gridWidth, PX_PER_CM, gridWidth / PX_PER_CM);
+	for (let i = 0; i <= gridWidth / PX_PER_CM; i++) {
+		gridLayer.add(new Konva.Line({ points: [i * PX_PER_CM, 0, i * PX_PER_CM, gridHeight], stroke: '#444', strokeWidth: 1, listening: false }));
 	}
-	for (let j = 0; j <= gridHeight / 50; j++) {
-		gridLayer.add(new Konva.Line({ points: [0, j * 50, gridWidth, j * 50], stroke: '#444', strokeWidth: 1, listening: false }));
+	for (let j = 0; j <= gridHeight / PX_PER_CM; j++) {
+		gridLayer.add(new Konva.Line({ points: [0, j * PX_PER_CM, gridWidth, j * PX_PER_CM], stroke: '#444', strokeWidth: 1, listening: false }));
 	}
 	gridLayer.draw();
 }
@@ -70,6 +71,11 @@ function selectCable(cableObj) {
 	document.getElementById('prop-title').innerText = "Propriétés Câble";
 	document.getElementById('cable-label').value = cableObj.label ? cableObj.label.text() : "";
 	document.getElementById('cable-color-picker').value = cableObj.line.stroke();
+	const length = calculateCableLength(cableObj);
+	const lengthInput = document.getElementById('cable-length');
+	if (lengthInput) {
+		lengthInput.value = length + " cm";
+	}
 	cableLayer.draw(); tempLayer.draw();
 }
 

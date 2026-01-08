@@ -53,6 +53,11 @@ function addHandleToCable(cableObj, group, x, y, redraw, isInit = false) {
 	h.on('contextmenu', (e) => {
 		e.evt.preventDefault(); h.destroy();
 		cableObj.handles = cableObj.handles.filter(handle => handle !== h);
+		const length = calculateCableLength(cableObj);
+		const lengthInput = document.getElementById('cable-length');
+		if (lengthInput) {
+			lengthInput.value = length + " cm";
+		}
 		redraw();
 	});
 
@@ -91,4 +96,32 @@ function cableRedraw(cableObj, line, isOrtho) {
 	if (cableObj.label) {
 		cableObj.label.position({ x: (startPos.x + endPos.x) / 2, y: (startPos.y + endPos.y) / 2 - 15 });
 	}
+
+	if (selectedCable === cableObj) {
+		const lengthInput = document.getElementById('cable-length');
+		if (lengthInput) {
+			lengthInput.value = calculateCableLength(cableObj) + " cm";
+		}
+	}
+}
+
+
+// manque ORTHO
+function calculateCableLength(cableObj) {
+	const points = cableObj.line.points();
+	let totalLength = 0;
+
+	for (let i = 0; i < points.length - 2; i += 2) {
+		const x1 = points[i];
+		const y1 = points[i + 1];
+		const x2 = points[i + 2];
+		const y2 = points[i + 3];
+
+		// Distance euclidienne entre deux points
+		const segmentLength = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+		totalLength += segmentLength;
+	}
+
+	// Conversion en cm via votre constante PX_PER_CM
+	return (totalLength / PX_PER_CM).toFixed(2);
 }

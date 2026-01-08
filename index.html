@@ -93,6 +93,11 @@
             <button style="background:#e74c3c; margin-top:20px" id="btn-delete">Delete (Suppr)</button>
             <button style="background:#444; margin-top:5px" onclick="deselectAll()">Deselect</button>
         </div>
+        <div class="prop-group">
+            <label>Longueur totale :</label>
+            <input type="text" id="cable-length" readonly 
+                style="background-color: #333; color: #2ecc71; font-weight: bold; border: 1px solid #444;">
+        </div>
     </div>
 
     <div id="help-modal" class="hidden">
@@ -107,6 +112,7 @@
                     <p><strong>Double Click</strong> <i>on cable</i> : Create point</p>
                     <p><strong>Right Click</strong> <i>on cable</i> : Inverse cable angle</p>
                     <p><strong>Right Click</strong> <i>on cable point</i> : Remove point</p>
+                    <p><strong>Shift + Click</strong> : Measure distance</p>
                 </div>
                 <div>
                     <h3>Keyboard Shortcuts</h3>

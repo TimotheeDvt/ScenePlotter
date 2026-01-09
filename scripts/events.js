@@ -218,7 +218,9 @@ window.addEventListener('mouseup', (e) => {
 
 // Shortcuts
 window.addEventListener('keydown', (e) => {
-	if (e.key === 'Delete' || e.key === 'Backspace') executeDelete();
+	const activeEl = document.activeElement;
+	const isTyping = activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA';
+	if (e.key === 'Delete' || e.key === 'Backspace' && !isTyping) executeDelete();
 	if (e.ctrlKey && e.key === 'c') copyGears();
 	if (e.ctrlKey && e.key === 'v') pasteGears();
 	if (e.ctrlKey && e.key === 'x') cutGears();

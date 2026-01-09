@@ -406,7 +406,7 @@ function addNewNote(text = "Nouvelle note", x = 100, y = 100) {
 		text: text,
 		x: x,
 		y: y,
-		fontSize: 16,
+		fontSize: 160,
 		fontFamily: 'Segoe UI',
 		fill: '#f1c40f',
 		fontStyle: 'bold',

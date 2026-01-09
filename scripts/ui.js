@@ -408,7 +408,7 @@ function addNewNote(text = "Nouvelle note", x = 100, y = 100) {
 		y: y,
 		fontSize: 160,
 		fontFamily: 'Segoe UI',
-		fill: '#f1c40f',
+		fill: '#ffffff',
 		fontStyle: 'bold',
 		draggable: true,
 		name: 'free-text'

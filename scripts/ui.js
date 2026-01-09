@@ -308,7 +308,7 @@ if (typeof SVG_LIBRARY !== 'undefined') {
 		title.onclick = () => { title.classList.toggle('collapsed'); grid.classList.toggle('collapsed'); };
 		cats[catName].forEach(f => {
 			const item = document.createElement('div'); item.className = 'bank-item';
-			const path = `svgs/${f.path || f}`;
+			const path = `assets/${f.path || f}`;
 			item.innerHTML = `<img src="${path}"><span>${f.name || f}</span>`;
 			item.onclick = () => addEquipment(
 				path,

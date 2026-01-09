@@ -70,6 +70,8 @@ stage.on('mousedown', (e) => {
 
 	const pos = stage.getRelativePointerPosition();
 
+	if (e.evt.button != 0) return;
+
 	if (selectedGears.length > 0) {
 		const selectionBox = tr.getClientRect();
 

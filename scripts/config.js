@@ -46,7 +46,9 @@ const tr = new Konva.Transformer({
 	keepRatio: true,
 	enabledAnchors: ['top-left', 'top-right', 'bottom-left', 'bottom-right'],
 	dragable: true,
-	shouldOverdrawWholeArea: true
+	shouldOverdrawWholeArea: true,
+	rotationSnaps: [0, 45, 90, 135, 180, 225, 270, 315],
+	rotationSnapTolerance: 10
 });
 mainLayer.add(tr);
 

@@ -294,6 +294,7 @@ document.getElementById('prop-grid-size').onchange = (e) => {
 };
 
 // --- LIBRARY ---
+const collapsedByDefault = ["electricity", "audio"]
 if (typeof SVG_LIBRARY !== 'undefined') {
 	const lib = document.getElementById('library-container');
 	const cats = {};
@@ -305,6 +306,10 @@ if (typeof SVG_LIBRARY !== 'undefined') {
 	for (let catName in cats) {
 		const title = document.createElement('div'); title.className = 'category-title'; title.innerText = catName;
 		const grid = document.createElement('div'); grid.className = 'bank-grid';
+		if (collapsedByDefault.includes(catName.toLowerCase())) {
+			title.classList.add('collapsed');
+			grid.classList.add('collapsed');
+		}
 		title.onclick = () => { title.classList.toggle('collapsed'); grid.classList.toggle('collapsed'); };
 		cats[catName].forEach(f => {
 			const item = document.createElement('div'); item.className = 'bank-item';

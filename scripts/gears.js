@@ -37,6 +37,7 @@ function createSingleAnchor(group, x, y, family, type, id) {
         rotation: rotation,
         draggable: true,
         name: 'anchor',
+		opacity: 0,
         id: id || group.id() + '-' + family + '-' + type + Math.random()
     });
 
@@ -131,7 +132,7 @@ function addEventListenersAnchor(c, img, group) {
 		if (e.evt.button === 0 && (e.evt.ctrlKey || e.evt.metaKey)) {
 			c.stopDrag();
 			activeAnchor = c;
-			showAllAnchors(true);
+			showAllAnchors(true, c.family, c.iotype);
 		}
 	});
 
@@ -203,13 +204,34 @@ function generateDefaultAnchors(group, connections) {
     }
 }
 
-function showAnchorsOfGear(g, v) {
-	if (!v && activeAnchor) return;
-	g.find('.anchor').forEach(a => a.opacity(v ? 1 : 0));
-	mainLayer.draw();
+function showAnchorsOfGear(group, v) {
+    if (!v) {
+        group.find('.anchor').forEach(a => a.opacity(0));
+        mainLayer.draw();
+        return;
+    }
+
+    group.find('.anchor').forEach(a => {
+        if (activeAnchor) {
+            const isCompatible = (a.family === activeAnchor.family && a.iotype !== activeAnchor.iotype);
+            a.opacity(isCompatible ? 1 : 0);
+        } else {
+            a.opacity(1);
+        }
+    });
+    mainLayer.draw();
 }
 
-function showAllAnchors(v) {
-	stage.find('.anchor').forEach(a => a.opacity(v ? 1 : 0));
-	mainLayer.draw();
+function showAllAnchors(v, filterFamily = null, filterType = null) {
+    stage.find('.anchor').forEach(a => {
+        if (!v) {
+            a.opacity(0);
+        } else if (filterFamily && filterType) {
+            const isCompatible = (a.family === filterFamily && a.iotype !== filterType);
+            a.opacity(isCompatible ? 1 : 0);
+        } else {
+            a.opacity(1);
+        }
+    });
+    mainLayer.draw();
 }

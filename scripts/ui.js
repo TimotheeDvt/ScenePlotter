@@ -134,6 +134,7 @@ function deselectAll() {
 	document.getElementById('selection-actions').style.display = 'none';
 	document.getElementById('prop-title').innerText = "Stage properties";
 	cableLayer.draw(); tempLayer.draw();
+	showAllAnchors(false);
 }
 
 // --- ACTIONS ---

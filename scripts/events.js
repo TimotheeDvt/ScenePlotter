@@ -217,8 +217,9 @@ window.addEventListener('mouseup', (e) => {
 		if (target) createCable(activeAnchor, target, []);
 		activeAnchor = null;
 		dragLine.visible(false);
+		dragLine.stroke('#FFFFFF');
 		showAllAnchors(false);
-		tempLayer.draw();
+		tempLayer.batchDraw();
 	}
 });
 

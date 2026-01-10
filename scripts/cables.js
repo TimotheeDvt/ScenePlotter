@@ -24,8 +24,16 @@ function createCable(startAnchor, endAnchor, midPoints = [], labelTxt = "", orth
 	const family = startAnchor.family;
 	const color = CABLE_FAMILIES[family].color;
 
-	const gearGroup = startAnchor.getParent();
-	const categoryGroup = gearGroup.getParent();
+	const catGroupStart = startAnchor.getParent().getParent();
+    const catGroupEnd = endAnchor.getParent().getParent();
+
+	let targetCategoryGroup = catGroupStart;
+
+	if (catGroupEnd.name() === "Instruments" || catGroupStart.name() === "Instruments") {
+        targetCategoryGroup = categoryGroups["Instruments"];
+    } else {
+		targetCategoryGroup = catGroupStart;
+	}
 
 	const line = new Konva.Line({
 		stroke: color,
@@ -39,7 +47,7 @@ function createCable(startAnchor, endAnchor, midPoints = [], labelTxt = "", orth
 
 	if (labelTxt) {
 		cableObj.label = new Konva.Text({ text: labelTxt, fontSize: 110, fill: 'white', fontStyle: 'italic' });
-		categoryGroup.add(cableObj.label);
+		targetCategoryGroup.add(cableObj.label);
 	}
 
 	function redraw() { cableRedraw(cableObj, line, isOrtho); }
@@ -58,7 +66,8 @@ function createCable(startAnchor, endAnchor, midPoints = [], labelTxt = "", orth
 
 	midPoints.forEach(p => addHandleToCable(cableObj, handlesGroup, p.x, p.y, redraw, true));
 
-	categoryGroup.add(line);
+	targetCategoryGroup.add(line);
+	line.moveToBottom();
 	tempLayer.add(handlesGroup);
 	cableObj.redraw = redraw;
 	cableObj.handlesGroup = handlesGroup;

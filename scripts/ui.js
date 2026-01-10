@@ -722,15 +722,23 @@ updateHistoryUI();
 function refreshGroupToggles() {
 	const container = document.getElementById('groups-toggles-container');
 	if (!container) return;
-	container.innerHTML = '<div class="toggle-container"> <label style="margin:0; font-size: 10px;">Cables</label> <label class="switch"> <input type="checkbox" checked="" onchange="toggleAllCablesVisibility()"> <span class="slider"></span> </label> </div>';
+	container.innerHTML = `
+	<div class="toggle-container not-hidden" id="toggle-cables">
+		<label style="margin:0; font-size: 10px;">Cables</label>
+		<label class="switch">
+			<input class="category-display-toggle" type="checkbox" checked="" onchange="toggleCategoryGroup('Cables', this.checked)">
+			<span class="slider"></span>
+		</label>
+	</div>`;
 
 	Object.keys(categoryGroups).forEach(cat => {
 		const div = document.createElement('div');
-		div.className = 'toggle-container';
+		div.className = 'toggle-container not-hidden';
+		div.id = `toggle-${cat.toLowerCase()}`;
 		div.innerHTML = `
             <label style="margin:0; font-size: 10px;">${cat}</label>
             <label class="switch">
-                <input type="checkbox" checked onchange="toggleCategoryGroup('${cat}', this.checked)">
+                <input class="category-display-toggle" type="checkbox" checked onchange="toggleCategoryGroup('${cat}', this.checked)">
                 <span class="slider"></span>
             </label>
         `;
@@ -739,8 +747,24 @@ function refreshGroupToggles() {
 }
 
 function toggleCategoryGroup(category, isVisible) {
+	if (category === 'Cables') {
+		toggleAllCablesVisibility(isVisible);
+		const relatedDiv = document.getElementById(`toggle-${category.toLowerCase()}`);
+		if (relatedDiv) {
+			relatedDiv.classList.toggle('hidden', !isVisible);
+			relatedDiv.classList.toggle('not-hidden', isVisible);
+		}
+		return;
+	}
+
 	const group = categoryGroups[category];
 	group.visible(isVisible);
+
+	const relatedDiv = document.getElementById(`toggle-${category.toLowerCase()}`);
+	if (relatedDiv) {
+		relatedDiv.classList.toggle('hidden', !isVisible);
+		relatedDiv.classList.toggle('not-hidden', isVisible);
+	}
 
 	mainLayer.batchDraw();
 }

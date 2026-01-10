@@ -232,6 +232,39 @@ input:checked+.slider:before {
   transform: translateX(14px);
 }
 
+.toggle-container.hidden {
+  animation: opacity 0.5s ease-in;
+  opacity: 0.5;
+}
+
+.toggle-container.hidden {
+  animation: opacity 0.5s ease-in;
+  opacity: 0.5;
+}
+
+@keyframes opacity {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.5;
+  }
+}
+
+.toggle-container.not-hidden {
+  animation: opacityout 0.5s ease-in;
+  opacity: 1;
+}
+
+@keyframes opacityout {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* Modals */
 #help-modal {
   position: fixed;

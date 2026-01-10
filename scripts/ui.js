@@ -144,8 +144,7 @@ function executeDelete() {
 			cables = cables.filter(c => {
 				if (c.fromId.startsWith(gear.id()) || c.toId.startsWith(gear.id())) {
 					const otherId = c.fromId.startsWith(gear.id()) ? c.toId : c.fromId;
-					const otherAnchor = stage.findOne('#' + otherId);
-					if (otherAnchor) otherAnchor.fill(otherAnchor.oldColor);
+					resetAnchorAfterDelete(otherId);
 					c.line.destroy(); c.handlesGroup.destroy(); if (c.label) c.label.destroy();
 					return false;
 				}
@@ -154,9 +153,10 @@ function executeDelete() {
 			gear.destroy();
 		});
 	} else if (selectedCable) {
+		resetAnchorAfterDelete(selectedCable.fromId);
+		resetAnchorAfterDelete(selectedCable.toId);
 		const sn = stage.findOne('#' + selectedCable.fromId);
 		const en = stage.findOne('#' + selectedCable.toId);
-		if (sn) sn.fill(sn.oldColor); if (en) en.fill(en.oldColor);
 		selectedCable.line.destroy(); selectedCable.handlesGroup.destroy(); if (selectedCable.label) selectedCable.label.destroy();
 		cables = cables.filter(c => c !== selectedCable);
 	} else {
@@ -175,8 +175,7 @@ function copyGears() {
 	clipboard = selectedGears.map(gear => ({
 		src: gear.findOne('.icon').image().src,
 		label: gear.findOne('Text').text(),
-		outCount: gear.find('.anchor').filter(a => a.oldColor === '#e74c3c').length,
-		inCount: gear.find('.anchor').filter(a => a.oldColor === '#3498db').length,
+		connections: gear.connections,
 		width: gear.findOne('.icon').width(), height: gear.findOne('.icon').height(),
 		anchors: gear.find('.anchor').map(a => ({ x: a.x(), y: a.y(), color: a.fill() }))
 	}));
@@ -185,7 +184,7 @@ function copyGears() {
 function pasteGears() {
 	if (!clipboard) return;
 	const pos = stage.getRelativePointerPosition() || { x: 150, y: 150 };
-	clipboard.forEach(c => addEquipment(c.src, pos.x, pos.y, null, c.label, c.outCount, c.inCount, c.anchors, c.width, c.height));
+	clipboard.forEach(c => addEquipment(c.src, pos.x, pos.y, null, c.label, c.connections, c.anchors, c.width, c.height));
 }
 
 function cutGears() { copyGears(); executeDelete(); }

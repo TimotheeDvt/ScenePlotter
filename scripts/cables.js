@@ -4,7 +4,14 @@ function updateAllCables() {
 }
 
 function createCable(startAnchor, endAnchor, midPoints = [], labelTxt = "", orthoInverse = false) {
-    if (startAnchor.family !== endAnchor.family) {
+    const isStartOccupied = cables.some(c => c.fromId === startAnchor.id() || c.toId === startAnchor.id());
+    const isEndOccupied = cables.some(c => c.fromId === endAnchor.id() || c.toId === endAnchor.id());
+
+    if (isStartOccupied || isEndOccupied) {
+        return;
+    }
+
+	if (startAnchor.family !== endAnchor.family) {
         return;
     }
     if (startAnchor.iotype === endAnchor.iotype && startAnchor.family !== 'aes') {
@@ -72,7 +79,6 @@ function addHandleToCable(cableObj, group, x, y, redraw, isInit = false) {
 		const length = calculateCableLength(cableObj);
 		const lengthInput = document.getElementById('cable-length');
 		if (lengthInput) {
-			console.log("1");
 			const lengthCm = parseFloat(length);
 			if (lengthCm >= 100) {
 				const meters = Math.floor(lengthCm / 100);

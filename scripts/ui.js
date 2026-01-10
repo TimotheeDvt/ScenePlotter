@@ -152,7 +152,7 @@ function deselectAll() {
 	document.getElementById('cable-props').style.display = 'none';
 	document.getElementById('selection-actions').style.display = 'none';
 	document.getElementById('prop-title').innerText = "Stage properties";
-	batchDrawAllCatLayers();
+	mainLayer.batchDraw();
 	cableLayer.batchDraw();
 	tempLayer.batchDraw();
 	showAllAnchors(false);
@@ -331,8 +331,9 @@ document.getElementById('cable-color-picker').oninput = (e) => {
 	});
 
 	cableLayer.draw();
-	if (categoryLayers[startAnchor.getLayer().name()]) {
-		categoryLayers[startAnchor.getLayer().name()].batchDraw();
+	const targetGroup = categoryGroups[startAnchor.getLayer().name()];
+	if (targetGroup) {
+		mainLayer.batchDraw();
 	}
 	saveHistory();
 };
@@ -424,25 +425,24 @@ function changeCableColor(family) {
 		}
 	});
 	cableLayer.batchDraw();
-	batchDrawAllCatLayers();
+	mainLayer.batchDraw();
 
 	saveHistory();
 }
 
 // --- LIBRARY ---
-function initCategoryLayers() {
+function initCategoryGroups() {
 	const categories = [...new Set(SVG_LIBRARY.map(item => item.category || "Notes")), "Notes"];
 	categories.forEach(cat => {
-		const layer = new Konva.Layer({ name: cat });
-		stage.add(layer);
-		categoryLayers[cat] = layer;
+		const group = new Konva.Group({ name: cat });
+		mainLayer.add(group);
+		categoryGroups[cat] = group;
 	});
-	cableLayer.moveToTop();
-	tempLayer.moveToTop();
+	mainLayer.batchDraw();
 }
 
-initCategoryLayers();
-refreshLayerToggles();
+initCategoryGroups();
+refreshGroupToggles();
 
 document.getElementById('projName').value = genName();
 if (typeof SVG_LIBRARY !== 'undefined') {
@@ -581,7 +581,7 @@ function addNewNote(text = "Nouvelle note", x = 100, y = 100, color = "#ffffff",
 		name: 'free-text'
 	});
 
-	const targetLayer = categoryLayers["Notes"];
+	const targetGroup = categoryGroups["Notes"];
 
 	note.on('dragmove', () => {
 		note.position({
@@ -609,9 +609,9 @@ function addNewNote(text = "Nouvelle note", x = 100, y = 100, color = "#ffffff",
 		if (note.getLayer()) note.getLayer().batchDraw();
 	});
 
-	if (targetLayer) {
-		targetLayer.add(note);
-		targetLayer.batchDraw();
+	if (targetGroup) {
+		targetGroup.add(note);
+		mainLayer.batchDraw();
 	}
 	selectedGears = [note];
 	updateSelectionUI();
@@ -700,18 +700,18 @@ function updateHistoryUI() {
 }
 updateHistoryUI();
 
-function refreshLayerToggles() {
-	const container = document.getElementById('layer-toggles-container');
+function refreshGroupToggles() {
+	const container = document.getElementById('groups-toggles-container');
 	if (!container) return;
 	container.innerHTML = '';
 
-	Object.keys(categoryLayers).forEach(cat => {
+	Object.keys(categoryGroups).forEach(cat => {
 		const div = document.createElement('div');
 		div.className = 'toggle-container';
 		div.innerHTML = `
             <label style="margin:0; font-size: 10px;">${cat}</label>
             <label class="switch">
-                <input type="checkbox" checked onchange="toggleCategoryLayer('${cat}', this.checked)">
+                <input type="checkbox" checked onchange="toggleCategoryGroup('${cat}', this.checked)">
                 <span class="slider"></span>
             </label>
         `;
@@ -719,22 +719,18 @@ function refreshLayerToggles() {
 	});
 }
 
-function toggleCategoryLayer(category, isVisible) {
-	const layer = categoryLayers[category];
-	layer.visible(isVisible);
+function toggleCategoryGroup(category, isVisible) {
+	const group = categoryGroups[category];
+	group.visible(isVisible);
 
 	cables.forEach(c => {
 		const startNode = stage.findOne('#' + c.fromId);
-		if (startNode && startNode.getLayer() === layer) {
+		if (startNode && startNode.getParent() === group) {
 			c.line.visible(isVisible);
 			if (c.label) c.label.visible(isVisible);
 		}
 	});
 
-	layer.batchDraw();
+	mainLayer.batchDraw();
 	cableLayer.batchDraw();
-}
-
-function batchDrawAllCatLayers() {
-	Object.values(categoryLayers).forEach(layer => layer.batchDraw());
 }

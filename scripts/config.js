@@ -40,12 +40,13 @@ const stage = new Konva.Stage({
 	height: container.offsetHeight
 });
 
-const categoryLayers = {};
+const categoryGroups = {};
 const gridLayer = new Konva.Layer();
+const mainLayer = new Konva.Layer();
 const cableLayer = new Konva.Layer();
 const tempLayer = new Konva.Layer();
 
-stage.add(gridLayer, cableLayer, tempLayer);
+stage.add(gridLayer, mainLayer, cableLayer, tempLayer);
 
 // Shared Transformer
 const tr = new Konva.Transformer({

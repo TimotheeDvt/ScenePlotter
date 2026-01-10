@@ -9,7 +9,7 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", connecti
 
 		const preset = SVG_LIBRARY.find(item => src.includes(item.path));
 		const category = preset ? (preset.category || "Notes") : "Notes";
-		const targetLayer = categoryLayers[category];
+		const targetGroup = categoryGroups[category] || categoryGroups["Notes"];
 
 		addUI(group, nativeImg, labelText, width, height);
 
@@ -31,10 +31,9 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", connecti
 
 		addEventListenersGroup(group);
 
-		targetLayer.add(group);
-
 		if (!isApplyingHistory) saveHistory();
-		targetLayer.batchDraw();
+		targetGroup.add(group);
+		mainLayer.batchDraw();
 	};
 	nativeImg.src = src;
 }
@@ -284,7 +283,7 @@ function showAllAnchors(v, filterFamily = null, filterType = null) {
 		}
 		if (a.visible()) a.strokeWidth(5);
 	});
-	batchDrawAllCatLayers();
+	mainLayer.batchDraw();
 }
 
 function isAnchorOccupied(anchorId) {

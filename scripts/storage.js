@@ -14,7 +14,7 @@ function saveStage() {
 		})),
 		notes: mainLayer.getChildren().filter(c => c.hasName('free-text')).map(n => ({
 			x: n.x(), y: n.y(), text: n.text(), fontSize: n.fontSize()
-	})),
+		})),
 		isOrtho
 	};
 	const link = document.createElement('a');

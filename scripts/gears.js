@@ -218,9 +218,9 @@ function showAnchorsOfGear(group, v) {
 
 	group.find('.anchor').forEach(a => {
 		if (isAnchorOccupied(a.id())) {
-            a.opacity(0);
-            return;
-        }
+			a.opacity(0);
+			return;
+		}
 
 		if (activeAnchor) {
 			if (activeAnchor.family === 'aes') {
@@ -253,19 +253,19 @@ function showAllAnchors(v, filterFamily = null, filterType = null) {
 }
 
 function isAnchorOccupied(anchorId) {
-    return cables.some(c => c.fromId === anchorId || c.toId === anchorId);
+	return cables.some(c => c.fromId === anchorId || c.toId === anchorId);
 }
 
 function resetAnchorAfterDelete(anchorId) {
-    const anchor = stage.findOne('#' + anchorId);
-    if (anchor) {
+	const anchor = stage.findOne('#' + anchorId);
+	if (anchor) {
 
 		console.log(anchor.family, CABLE_FAMILIES[anchor.family])
-        if (anchor.family && CABLE_FAMILIES[anchor.family]) {
-            anchor.fill(CABLE_FAMILIES[anchor.family].color);
-        }
-        anchor.opacity(0);
+		if (anchor.family && CABLE_FAMILIES[anchor.family]) {
+			anchor.fill(CABLE_FAMILIES[anchor.family].color);
+		}
+		anchor.opacity(0);
 
 		mainLayer.draw();
-    }
+	}
 }

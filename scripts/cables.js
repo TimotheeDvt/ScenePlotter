@@ -4,30 +4,30 @@ function updateAllCables() {
 }
 
 function createCable(startAnchor, endAnchor, midPoints = [], labelTxt = "", orthoInverse = false) {
-    const isStartOccupied = cables.some(c => c.fromId === startAnchor.id() || c.toId === startAnchor.id());
-    const isEndOccupied = cables.some(c => c.fromId === endAnchor.id() || c.toId === endAnchor.id());
+	const isStartOccupied = cables.some(c => c.fromId === startAnchor.id() || c.toId === startAnchor.id());
+	const isEndOccupied = cables.some(c => c.fromId === endAnchor.id() || c.toId === endAnchor.id());
 
-    if (isStartOccupied || isEndOccupied) {
-        return;
-    }
+	if (isStartOccupied || isEndOccupied) {
+		return;
+	}
 
 	if (startAnchor.family !== endAnchor.family) {
-        return;
-    }
-    if (startAnchor.iotype === endAnchor.iotype && startAnchor.family !== 'aes') {
-        return;
-    }
+		return;
+	}
+	if (startAnchor.iotype === endAnchor.iotype && startAnchor.family !== 'aes') {
+		return;
+	}
 
-    const family = startAnchor.family;
-    const color = CABLE_FAMILIES[family].color;
+	const family = startAnchor.family;
+	const color = CABLE_FAMILIES[family].color;
 
-    const line = new Konva.Line({
-        stroke: color,
-        strokeWidth: 40,
-        lineCap: 'round',
-        lineJoin: 'round',
-        hitStrokeWidth: 200
-    });
+	const line = new Konva.Line({
+		stroke: color,
+		strokeWidth: 40,
+		lineCap: 'round',
+		lineJoin: 'round',
+		hitStrokeWidth: 200
+	});
 	const handlesGroup = new Konva.Group({ visible: false });
 	const cableObj = { line, fromId: startAnchor.id(), toId: endAnchor.id(), handles: [], isSelected: false, label: null, orthoInverse };
 

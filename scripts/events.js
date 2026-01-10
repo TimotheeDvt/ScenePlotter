@@ -241,9 +241,12 @@ window.addEventListener('mouseup', (e) => {
 
 // Shortcuts
 window.addEventListener('keydown', (e) => {
-	const activeEl = document.activeElement;
-	const isTyping = activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA';
-	if (e.key === 'Delete' || e.key === 'Backspace' && !isTyping) executeDelete();
+	if (e.key === 'Delete' || e.key === 'Backspace') {
+		const activeEl = document.activeElement;
+		const isTyping = activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA';
+		if (isTyping) return;
+		executeDelete();
+	}
 	if (e.ctrlKey && e.key === 'c') copyGears();
 	if (e.ctrlKey && e.key === 'v') pasteGears();
 	if (e.ctrlKey && e.key === 'x') cutGears();
@@ -265,6 +268,7 @@ window.addEventListener('keydown', (e) => {
 	if (e.key === 'Escape') {
 		const help = document.getElementById('help-modal');
 		if (help && !help.classList.contains('hidden')) help.classList.add('hidden');
+		deselectAll();
 	}
 	if (e.ctrlKey && e.key === 's') {
 		e.preventDefault();

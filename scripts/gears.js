@@ -10,7 +10,7 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", connecti
 		addUI(group, nativeImg, labelText, width, height);
 
 		if (anchorData && anchorData.length > 0) {
-			anchorData.forEach(ad => createSingleAnchor(group, ad.x, ad.y, ad.family, ad.type, ad.id));
+			anchorData.forEach(ad => createSingleAnchor(group, ad.x, ad.y, ad.family, ad.iotype, ad.id));
 		} else if (width && height) {
 			const preset = SVG_LIBRARY.find(item => src.includes(item.path));
 			if (preset && preset.fixedAnchors) {
@@ -18,7 +18,7 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", connecti
 					// On recalcule la position proportionnellement à la taille actuelle (width/height)
 					const scaleX = width / preset.width;
 					const scaleY = height / preset.height;
-					createSingleAnchor(group, fa.x * scaleX, fa.y * scaleY, fa.family, fa.type);
+					createSingleAnchor(group, fa.x * scaleX, fa.y * scaleY, fa.family, fa.iotype);
 				});
 			} else {
 				generateDefaultAnchors(group, connections);

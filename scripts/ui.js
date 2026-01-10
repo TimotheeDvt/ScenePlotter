@@ -195,16 +195,42 @@ function copyGears() {
 	clipboard = selectedGears.map(gear => ({
 		src: gear.findOne('.icon').image().src,
 		label: gear.findOne('Text').text(),
-		connections: gear.connections,
-		width: gear.findOne('.icon').width(), height: gear.findOne('.icon').height(),
-		anchors: gear.find('.anchor').map(a => ({ x: a.x(), y: a.y(), color: a.fill() }))
+		connections: JSON.parse(JSON.stringify(gear.connections)),
+		width: gear.findOne('.icon').width(),
+		height: gear.findOne('.icon').height(),
+		anchors: gear.find('.anchor').map(a => {console.log(a); return {
+			x: a.x(),
+			y: a.y(),
+			color: a.fill(),
+			family: a.family,
+			iotype: a.iotype
+		}})
 	}));
 }
 
 function pasteGears() {
 	if (!clipboard) return;
-	const pos = stage.getRelativePointerPosition() || { x: 150, y: 150 };
-	clipboard.forEach(c => addEquipment(c.src, pos.x, pos.y, null, c.label, c.connections, c.anchors, c.width, c.height));
+
+	const pos = stage.getRelativePointerPosition() || {
+		x: (stage.width() / 2 - stage.x()) / stage.scaleX(),
+		y: (stage.height() / 2 - stage.y()) / stage.scaleY()
+	};
+
+	console.log(clipboard)
+
+	clipboard.forEach(c => {
+		addEquipment(
+			c.src,
+			pos.x,
+			pos.y,
+			null,
+			c.label,
+			c.connections,
+			c.anchors,
+			c.width,
+			c.height
+		);
+	});
 }
 
 function cutGears() { copyGears(); executeDelete(); }

@@ -257,9 +257,11 @@ function pasteGears() {
 function cutGears() { copyGears(); executeDelete(); }
 
 function updateIO() {
+	idEquivalents = {};
 	selectedGears.forEach(gear => {
 		const img = gear.findOne('.icon');
 		const w = img.width(), h = img.height();
+		const oldIds = gear.find('.anchor').map(a => a.id());
 		gear.find('.anchor').forEach(a => a.destroy());
 		const src = img.image().src;
 		const preset = SVG_LIBRARY.find(item => src.includes(item.path));
@@ -288,6 +290,8 @@ function updateIO() {
 				}
 			});
 		}
+		const newIds = gear.find('.anchor').map(a => a.id());
+		idEquivalents = { ...Object.fromEntries(oldIds.map((id, idx) => [id, newIds[idx]])) };
 	});
 
 	updateAllCables();

@@ -123,9 +123,21 @@ function addHandleToCable(cableObj, group, x, y, redraw, isInit = false) {
 }
 
 function cableRedraw(cableObj, line, isOrtho) {
-	const sn = stage.findOne('#' + cableObj.fromId);
-	const en = stage.findOne('#' + cableObj.toId);
-	if (!sn || !en) return;
+	let sn = stage.findOne('#' + cableObj.fromId);
+	let en = stage.findOne('#' + cableObj.toId);
+
+	if (!sn && idEquivalents[cableObj.fromId]) {
+		cableObj.fromId = idEquivalents[cableObj.fromId];
+		sn = stage.findOne('#' + cableObj.fromId);
+	} else if (!sn) {
+		return;
+	}
+	if (!en && idEquivalents[cableObj.toId]) {
+		cableObj.toId = idEquivalents[cableObj.toId];
+		en = stage.findOne('#' + cableObj.toId);
+	} else if (!en) {
+		return;
+	}
 
 	const startPos = sn.getAbsolutePosition(stage);
 	const endPos = en.getAbsolutePosition(stage);

@@ -213,36 +213,43 @@ function generateDefaultAnchors(group, connections) {
 function showAnchorsOfGear(group, v) {
 	if (!v) {
 		group.find('.anchor').forEach(a => {
-			a.visible(false); // On cache pour la performance
-			a.listening(false); // On désactive les interactions
+			a.visible(false);
+			a.listening(false);
 		});
 		mainLayer.batchDraw();
 		return;
 	}
 
 	group.find('.anchor').forEach(a => {
-		// On ne montre pas les ancres déjà connectées
-		if (isAnchorOccupied(a.id())) {
-			a.visible(false);
-			a.listening(false);
-			return;
-		}
-
-		let isVisible = false;
+		const occupied = isAnchorOccupied(a.id());
 		if (activeAnchor) {
+			if (occupied) {
+				a.visible(false);
+				a.listening(false);
+				return;
+			}
+			let isCompatible = false;
 			if (activeAnchor.family === 'aes') {
-				isVisible = (a.family === 'aes');
+				isCompatible = (a.family === 'aes');
 			} else {
-				isVisible = (a.family === activeAnchor.family && a.iotype !== activeAnchor.iotype);
+				isCompatible = (a.family === activeAnchor.family && a.iotype !== activeAnchor.iotype);
+			}
+			a.visible(isCompatible);
+			a.listening(isCompatible);
+			if (isCompatible) {
+				a.opacity(1);
+				a.strokeWidth(5);
 			}
 		} else {
-			isVisible = true;
+			a.visible(true);
+			a.listening(true);
+			a.opacity(1);
+			if (occupied) {
+				a.strokeWidth(0);
+			} else {
+				a.strokeWidth(5);
+			}
 		}
-		
-		// On applique la visibilité et on remet l'opacité à 1 pour être sûr qu'elles soient vues
-		a.visible(isVisible);
-		a.listening(isVisible);
-		if (isVisible) a.opacity(1); 
 	});
 	mainLayer.batchDraw();
 }
@@ -267,6 +274,7 @@ function showAllAnchors(v, filterFamily = null, filterType = null) {
 			a.listening(true);
 			a.opacity(1);
 		}
+		if (a.visible()) a.strokeWidth(5);
 	});
 	mainLayer.batchDraw();
 }

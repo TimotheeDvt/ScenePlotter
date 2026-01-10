@@ -6,8 +6,7 @@ function saveStage() {
 			src: g.findOne('.icon').image().src.split("/svgs/")[1] || g.findOne('.icon').image().src,
 			anchors: g.find('.anchor').map(a => ({ x: a.x(), y: a.y(), color: a.fill(), id: a.id() })),
 			width: g.findOne('.icon').width(), height: g.findOne('.icon').height(),
-			inCount: g.find('.anchor').filter(a => a.oldColor === '#3498db').length,
-			outCount: g.find('.anchor').filter(a => a.oldColor === '#e74c3c').length
+			connections: g.connections
 		})),
 		cables: cables.map(c => ({
 			fromId: c.fromId, toId: c.toId, color: c.line.stroke(), label: c.label ? c.label.text() : "",
@@ -56,8 +55,7 @@ function saveHistory() {
 			id: g.id(), x: g.x(), y: g.y(), label: g.findOne('Text').text(), src: g.findOne('.icon').image().src,
 			anchors: g.find('.anchor').map(a => ({ x: a.x(), y: a.y(), color: a.fill(), id: a.id() })),
 			width: g.findOne('.icon').width(), height: g.findOne('.icon').height(),
-			inCount: g.find('.anchor').filter(a => a.oldColor === '#3498db').length,
-			outCount: g.find('.anchor').filter(a => a.oldColor === '#e74c3c').length
+			connections: g.connections
 		})),
 		cables: cables.map(c => ({
 			fromId: c.fromId, toId: c.toId, color: c.line.stroke(), label: c.label ? c.label.text() : "",

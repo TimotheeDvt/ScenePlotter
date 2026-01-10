@@ -107,8 +107,6 @@ function updateSelectionUI() {
 				document.getElementById('prop-title').innerText = "Element Properties";
 				document.getElementById('prop-label').value = gear.findOne('Text').text();
 				document.getElementById('prop-size-cm').value = (gear.findOne('.icon').width() / PX_PER_CM).toFixed(1);
-				document.getElementById('prop-in').value = gear.find('.anchor').filter(a => a.oldColor === '#3498db').length;
-				document.getElementById('prop-out').value = gear.find('.anchor').filter(a => a.oldColor === '#e74c3c').length;
 			} else if (selectedGears[0].hasName('free-text')) {
 				textProps.style.display = 'block';
 				document.getElementById('prop-title').innerText = "Free Text Properties";
@@ -235,8 +233,6 @@ document.getElementById('prop-size-cm').oninput = (e) => {
 		updateIO();
 	}
 };
-document.getElementById('prop-in').onchange = updateIO;
-document.getElementById('prop-out').onchange = updateIO;
 document.getElementById('cable-label').oninput = (e) => {
 	if (!selectedCable) return;
 	if (!selectedCable.label) {
@@ -246,9 +242,28 @@ document.getElementById('cable-label').oninput = (e) => {
 	selectedCable.label.text(e.target.value); selectedCable.redraw();
 };
 document.getElementById('cable-color-picker').oninput = (e) => {
-	if (!selectedCable) return;
-	const sn = stage.findOne('#' + selectedCable.fromId), en = stage.findOne('#' + selectedCable.toId);
-	if (sn && en) { sn.fill(e.target.value); en.fill(e.target.value); selectedCable.redraw(); mainLayer.draw(); }
+    if (!selectedCable) return;
+    const newColor = e.target.value;
+    const startAnchor = stage.findOne('#' + selectedCable.fromId);
+    const family = startAnchor.family;
+
+    CABLE_FAMILIES[family].color = newColor;
+
+    cables.forEach(c => {
+        const anc = stage.findOne('#' + c.fromId);
+        if (anc && anc.family === family) {
+            c.line.stroke(newColor);
+        }
+    });
+    stage.find('.anchor').forEach(a => {
+        if (a.family === family) {
+            a.fill(newColor);
+        }
+    });
+
+    cableLayer.draw();
+    mainLayer.draw();
+    saveHistory();
 };
 
 document.getElementById('note-text-input').oninput = (e) => {
@@ -294,43 +309,44 @@ document.getElementById('prop-grid-size').onchange = (e) => {
 };
 
 // --- LIBRARY ---
-const collapsedByDefault = ["electricity", "audio"]
 if (typeof SVG_LIBRARY !== 'undefined') {
-	const lib = document.getElementById('library-container');
-	const cats = {};
-	SVG_LIBRARY.forEach(f => {
-		const cat = (f.category || "Miscellaneous").toLowerCase();
-		if (!cats[cat]) cats[cat] = [];
-		cats[cat].push(f);
-	});
-	for (let catName in cats) {
-		const title = document.createElement('div'); title.className = 'category-title'; title.innerText = catName;
-		const grid = document.createElement('div'); grid.className = 'bank-grid';
-		if (collapsedByDefault.includes(catName.toLowerCase())) {
-			title.classList.add('collapsed');
-			grid.classList.add('collapsed');
-		}
-		title.onclick = () => { title.classList.toggle('collapsed'); grid.classList.toggle('collapsed'); };
-		cats[catName].forEach(f => {
-			const item = document.createElement('div'); item.className = 'bank-item';
-			const path = `assets/${f.path || f}`;
-			item.innerHTML = `<img src="${path}"><span>${f.name || f}</span>`;
-			item.onclick = () => addEquipment(
-				path,
-				150,
-				150,
-				null,
-				"",
-				f.outputNbAnchors ?? 2,
-				f.inputNbAnchors ?? 2,
-				null,
-				(f.width ?? 80) * PX_PER_CM,
-				(f.height ?? 80) * PX_PER_CM
-			);
-			grid.appendChild(item);
-		});
-		lib.appendChild(title); lib.appendChild(grid);
-	}
+    const lib = document.getElementById('library-container');
+    const cats = {};
+    SVG_LIBRARY.forEach(f => {
+        const cat = (f.category || "Miscellaneous").toLowerCase();
+        if (!cats[cat]) cats[cat] = [];
+        cats[cat].push(f);
+    });
+    for (let catName in cats) {
+        const title = document.createElement('div'); title.className = 'category-title'; title.innerText = catName;
+        const grid = document.createElement('div'); grid.className = 'bank-grid';
+
+        if (["electricity", "audio"].includes(catName.toLowerCase())) {
+            title.classList.add('collapsed');
+            grid.classList.add('collapsed');
+        }
+
+        title.onclick = () => { title.classList.toggle('collapsed'); grid.classList.toggle('collapsed'); };
+
+        cats[catName].forEach(f => {
+            const item = document.createElement('div'); item.className = 'bank-item';
+            const path = `assets/${f.path || f}`;
+            item.innerHTML = `<img src="${path}"><span>${f.name || f}</span>`;
+
+            item.onclick = () => addEquipment(
+                path,
+                150, 150,
+                null,
+                "",
+                f.connections || {}, // On passe l'objet de connexions au lieu de in/out
+                null,
+                (f.width ?? 80) * PX_PER_CM,
+                (f.height ?? 80) * PX_PER_CM
+            );
+            grid.appendChild(item);
+        });
+        lib.appendChild(title); lib.appendChild(grid);
+    }
 }
 
 // --- UTILS ---
@@ -449,4 +465,44 @@ function addNewNote(text = "Nouvelle note", x = 100, y = 100) {
 	updateSelectionUI();
 	mainLayer.draw();
 	saveHistory();
+}
+
+function refreshFamilyInputs(gear) {
+    const container = document.getElementById('family-inputs-container');
+    container.innerHTML = ''; // On vide
+
+    // Pour chaque famille définie dans la config
+    Object.keys(CABLE_FAMILIES).forEach(famKey => {
+        const fam = CABLE_FAMILIES[famKey];
+        const conn = gear.connections[famKey] || { in: 0, out: 0 };
+
+        const div = document.createElement('div');
+        div.style.marginBottom = "10px";
+        div.innerHTML = `
+            <label style="color:${fam.color}">${fam.label}</label>
+            <div style="display: flex; gap: 5px;">
+                <input type="number" placeholder="In" value="${conn.in}"
+                    onchange="updateGearConnections('${famKey}', 'in', this.value)" style="flex:1">
+                <input type="number" placeholder="Out" value="${conn.out}"
+                    onchange="updateGearConnections('${famKey}', 'out', this.value)" style="flex:1">
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function updateGearConnections(family, type, value) {
+    if (selectedGears.length !== 1) return;
+    const gear = selectedGears[0];
+
+    if (!gear.connections[family]) gear.connections[family] = { in: 0, out: 0 };
+    gear.connections[family][type] = parseInt(value) || 0;
+
+    // On régénère les ancres
+    gear.find('.anchor').forEach(a => a.destroy());
+    generateDefaultAnchors(gear, gear.connections);
+
+    updateAllCables();
+    saveHistory();
+    mainLayer.draw();
 }

@@ -3,8 +3,26 @@ function updateAllCables() {
 	cableLayer.batchDraw();
 }
 
-function createCable(startAnchor, endAnchor, midPoints = [], color = null, labelTxt = "", orthoInverse = false) {
-	const line = new Konva.Line({ strokeWidth: 40, lineCap: 'round', lineJoin: 'round', hitStrokeWidth: 200 });
+function createCable(startAnchor, endAnchor, midPoints = [], labelTxt = "", orthoInverse = false) {
+    if (startAnchor.family !== endAnchor.family) {
+        alert("Incompatible : Les familles de câbles doivent être identiques.");
+        return;
+    }
+    if (startAnchor.iotype === endAnchor.iotype) {
+        alert("Incompatible : Connectez un 'In' vers un 'Out'.");
+        return;
+    }
+
+    const family = startAnchor.family;
+    const color = CABLE_FAMILIES[family].color;
+
+    const line = new Konva.Line({
+        stroke: color,
+        strokeWidth: 40,
+        lineCap: 'round',
+        lineJoin: 'round',
+        hitStrokeWidth: 200
+    });
 	const handlesGroup = new Konva.Group({ visible: false });
 	const cableObj = { line, fromId: startAnchor.id(), toId: endAnchor.id(), handles: [], isSelected: false, label: null, orthoInverse };
 

@@ -24,6 +24,14 @@ let GRID_CELL_SIZE = 20 * PX_PER_CM;
 let gridWidth = 600 * PX_PER_CM;
 let gridHeight = 400 * PX_PER_CM;
 
+const CABLE_FAMILIES = {
+	xlr: { label: "XLR", color: "#0000FF", types: ["in", "out"] },
+	jack: { label: "Jack", color: "#000000", types: ["in", "out"] },
+	dmx: { label: "DMX", color: "#800080", types: ["in", "out"] },
+	elec: { label: "Electricité", color: "#FFFFFF", types: ["in", "out"] },
+	aes: { label: "AES", color: "#FF0000", types: ["in", "out"] }
+};
+
 // Konva Setup
 const container = document.getElementById('canvas-container');
 const stage = new Konva.Stage({

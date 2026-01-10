@@ -1,38 +1,50 @@
-function addEquipment(src, x = 100, y = 100, id = null, labelText = "", outCount = 2, inCount = 2, anchorData = null, width = null, height = null) {
-	const nativeImg = new Image();
-	nativeImg.onload = () => {
-		const group = new Konva.Group({
-			x: x, y: y, draggable: true, name: 'gear', id: id || 'g' + Date.now()
-		});
+function addEquipment(src, x = 100, y = 100, id = null, labelText = "", connections = {}, anchorData = null, width = null, height = null) {
+    const nativeImg = new Image();
+    nativeImg.onload = () => {
+        const group = new Konva.Group({
+            x: x, y: y, draggable: true, name: 'gear', id: id || 'g' + Date.now()
+        });
 
-		addUI(group, nativeImg, labelText, width, height);
+        group.connections = connections;
 
-		if (anchorData) {
-			anchorData.forEach(ad => createSingleAnchor(group, ad.x, ad.y, ad.color, ad.id));
-		} else {
-			generateDefaultAnchors(group, outCount, inCount);
-		}
+        addUI(group, nativeImg, labelText, width, height);
 
-		addEventListenersGroup(group)
+        if (anchorData) {
+            anchorData.forEach(ad => createSingleAnchor(group, ad.x, ad.y, ad.family, ad.type, ad.id));
+        } else {
+            generateDefaultAnchors(group, connections);
+        }
 
-		if (!isApplyingHistory) saveHistory();
-		mainLayer.batchDraw();
-	};
-	nativeImg.src = src;
+        addEventListenersGroup(group);
+        if (!isApplyingHistory) saveHistory();
+        mainLayer.batchDraw();
+    };
+    nativeImg.src = src;
 }
 
-function createSingleAnchor(group, x, y, color, id) {
+function createSingleAnchor(group, x, y, family, type, id) {
 	const img = group.findOne('.icon');
-	const c = new Konva.Circle({
-		x: x, y: y, radius: 80, fill: color, opacity: 0,
-		draggable: true, name: 'anchor', id: id || group.id() + '-a' + Math.random()
-	});
-	c.oldColor = color;
+	const color = CABLE_FAMILIES[family] ? CABLE_FAMILIES[family].color : '#888';
+	const triangle = new Konva.RegularPolygon({
+        x: x, y: y,
+        sides: 3,
+        radius: 40,
+        fill: color,
+        stroke: 'white',
+        strokeWidth: 5,
+        rotation: type === 'in' ? 180 : 0,
+        name: 'anchor',
+        id: id || group.id() + '-' + family + '-' + type + Math.random()
+    });
+	triangle.oldColor = color;
 
-	addEventListenersAnchor(c, img, group);
+	triangle.family = family;
+	triangle.iotype = type;
 
-	group.add(c);
-	return c;
+	addEventListenersAnchor(triangle, img, group);
+
+	group.add(triangle);
+	return triangle;
 }
 
 function createVirtualAnchor(group, x, y) {
@@ -141,17 +153,26 @@ function addEventListenersAnchor(c, img, group) {
 	});
 }
 
-function generateDefaultAnchors(group, outCount, inCount) {
-	const total = parseInt(outCount) + parseInt(inCount);
-	const img = group.findOne('.icon');
-	for (let i = 0; i < outCount; i++) {
-		const pos = getRectPos(i, total, img.width(), img.height());
-		createSingleAnchor(group, pos.x, pos.y, '#e74c3c', group.id() + '-out' + i);
-	}
-	for (let i = 0; i < inCount; i++) {
-		const pos = getRectPos(i + parseInt(outCount), total, img.width(), img.height());
-		createSingleAnchor(group, pos.x, pos.y, '#3498db', group.id() + '-in' + i);
-	}
+function generateDefaultAnchors(group, connections) {
+    if (!connections) return;
+    const img = group.findOne('.icon');
+    const w = img.width();
+    const h = img.height();
+
+    let totalAnchors = 0;
+    Object.values(connections).forEach(f => totalAnchors += (f.in + f.out));
+
+    let index = 0;
+    for (const [family, counts] of Object.entries(connections)) {
+        for (let i = 0; i < counts.out; i++) {
+            const pos = getRectPos(index++, totalAnchors, w, h);
+            createSingleAnchor(group, pos.x, pos.y, family, 'out');
+        }
+        for (let i = 0; i < counts.in; i++) {
+            const pos = getRectPos(index++, totalAnchors, w, h);
+            createSingleAnchor(group, pos.x, pos.y, family, 'in');
+        }
+    }
 }
 
 function showAnchorsOfGear(g, v) {

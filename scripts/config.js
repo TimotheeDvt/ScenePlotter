@@ -1,5 +1,5 @@
 // Global State
-let isOrtho = false;
+let isOrtho = true;
 let selectedGears = [];
 let selectedCable = null;
 let cables = [];

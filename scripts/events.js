@@ -149,7 +149,13 @@ stage.on('mousemove touchmove', (e) => {
 	if (activeAnchor) {
 		const pos = stage.getRelativePointerPosition();
 		const start = activeAnchor.getAbsolutePosition(stage);
+
+		const familyColor = CABLE_FAMILIES[activeAnchor.family]
+			? CABLE_FAMILIES[activeAnchor.family].color
+			: '#ffffff';
+
 		dragLine.points([start.x, start.y, pos.x, pos.y]);
+		dragLine.stroke(familyColor);
 		dragLine.visible(true);
 		tempLayer.batchDraw();
 	}

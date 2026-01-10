@@ -198,13 +198,13 @@ function copyGears() {
 		connections: JSON.parse(JSON.stringify(gear.connections)),
 		width: gear.findOne('.icon').width(),
 		height: gear.findOne('.icon').height(),
-		anchors: gear.find('.anchor').map(a => {console.log(a); return {
+		anchors: gear.find('.anchor').map(a => ({
 			x: a.x(),
 			y: a.y(),
 			color: a.fill(),
 			family: a.family,
 			iotype: a.iotype
-		}})
+		}))
 	}));
 }
 
@@ -215,8 +215,6 @@ function pasteGears() {
 		x: (stage.width() / 2 - stage.x()) / stage.scaleX(),
 		y: (stage.height() / 2 - stage.y()) / stage.scaleY()
 	};
-
-	console.log(clipboard)
 
 	clipboard.forEach(c => {
 		addEquipment(
@@ -537,14 +535,14 @@ function setAllCategories(collapse) {
 	});
 }
 
-function addNewNote(text = "Nouvelle note", x = 100, y = 100) {
+function addNewNote(text = "Nouvelle note", x = 100, y = 100, color = "#ffffff", fontSize = 160) {
 	const note = new Konva.Text({
 		text: text,
 		x: x,
 		y: y,
-		fontSize: 160,
+		fontSize: fontSize,
 		fontFamily: 'Segoe UI',
-		fill: '#ffffff',
+		fill: color,
 		fontStyle: 'bold',
 		draggable: true,
 		name: 'free-text'

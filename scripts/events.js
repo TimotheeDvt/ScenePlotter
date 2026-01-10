@@ -250,6 +250,10 @@ window.addEventListener('keydown', (e) => {
 		const help = document.getElementById('help-modal');
 		if (help && !help.classList.contains('hidden')) help.classList.add('hidden');
 	}
+	if (e.ctrlKey && e.key === 's') {
+		e.preventDefault();
+		saveStage();
+	}
 });
 
 stage.on('click tap', (e) => { if (e.target === stage) deselectAll(); });

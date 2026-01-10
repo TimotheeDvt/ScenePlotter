@@ -4,16 +4,17 @@ function saveStage() {
 		gear: mainLayer.getChildren().filter(c => c.hasName('gear')).map(g => ({
 			id: g.id(), x: g.x(), y: g.y(), label: g.findOne('Text').text(),
 			src: g.findOne('.icon').image().src.split("/assets/")[1] || g.findOne('.icon').image().src,
-			anchors: g.find('.anchor').map(a => ({ x: a.x(), y: a.y(), color: a.fill(), id: a.id() })),
+			anchors: g.find('.anchor').map(a => ({ x: a.x(), y: a.y(), color: a.fill(), id: a.id(), family: a.family, iotype: a.iotype })),
 			width: g.findOne('.icon').width(), height: g.findOne('.icon').height(),
-			connections: g.connections
+			connections: g.connections,
+			rotation: g.rotation()
 		})),
 		cables: cables.map(c => ({
 			fromId: c.fromId, toId: c.toId, color: c.line.stroke(), label: c.label ? c.label.text() : "",
 			midPoints: c.handles.map(h => ({ x: h.x(), y: h.y() })), orthoInverse: c.orthoInverse
 		})),
 		notes: mainLayer.getChildren().filter(c => c.hasName('free-text')).map(n => ({
-			x: n.x(), y: n.y(), text: n.text(), fontSize: n.fontSize()
+			x: n.x(), y: n.y(), text: n.text(), fontSize: n.fontSize(), color: n.fill()
 		})),
 		isOrtho
 	};
@@ -33,14 +34,14 @@ function loadStage(event) {
 		cables = [];
 		isOrtho = data.isOrtho;
 		if (data.notes) {
-			data.notes.forEach(n => addNewNote(n.text, n.x, n.y));
+			data.notes.forEach(n => addNewNote(n.text, n.x, n.y, n.color, n.fontSize));
 		}
 		document.getElementById('orthoToggle').checked = isOrtho;
-		data.gear.forEach(g => addEquipment("assets/" + g.src, g.x, g.y, g.id, g.label, g.connections || {}, g.anchors, g.width, g.height));
+		data.gear.forEach(g => addEquipment("assets/" + g.src, g.x, g.y, g.id, g.label, g.connections || {}, g.anchors, g.width, g.height, g.rotation));
 		setTimeout(() => {
 			data.cables.forEach(c => {
 				const sn = stage.findOne('#' + c.fromId); const en = stage.findOne('#' + c.toId);
-				if (sn && en) createCable(sn, en, c.midPoints, c.color, c.label, c.orthoInverse);
+				if (sn && en) createCable(sn, en, c.midPoints, c.label, c.orthoInverse);
 			});
 		}, 300);
 	};

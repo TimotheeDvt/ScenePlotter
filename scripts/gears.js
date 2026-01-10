@@ -1,8 +1,8 @@
-function addEquipment(src, x = 100, y = 100, id = null, labelText = "", connections = {}, anchorData = null, width = null, height = null) {
+function addEquipment(src, x = 100, y = 100, id = null, labelText = "", connections = {}, anchorData = null, width = null, height = null, rotation = 0) {
 	const nativeImg = new Image();
 	nativeImg.onload = () => {
 		const group = new Konva.Group({
-			x: x, y: y, draggable: true, name: 'gear', id: id || 'g' + Date.now()
+			x: x, y: y, draggable: true, name: 'gear', id: id || 'g' + Date.now(), rotation: rotation
 		});
 
 		group.connections = connections;
@@ -15,10 +15,9 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", connecti
 			const preset = SVG_LIBRARY.find(item => src.includes(item.path));
 			if (preset && preset.fixedAnchors) {
 				preset.fixedAnchors.forEach(fa => {
-					// On recalcule la position proportionnellement à la taille actuelle (width/height)
 					const scaleX = width / preset.width;
 					const scaleY = height / preset.height;
-					createSingleAnchor(group, fa.x * scaleX, fa.y * scaleY, fa.family, fa.iotype);
+					createSingleAnchor(group, fa.x * scaleX, fa.y * scaleY, fa.family, fa.type);
 				});
 			} else {
 				generateDefaultAnchors(group, connections);
@@ -305,8 +304,6 @@ function isAnchorOccupied(anchorId) {
 function resetAnchorAfterDelete(anchorId) {
 	const anchor = stage.findOne('#' + anchorId);
 	if (anchor) {
-
-		console.log(anchor.family, CABLE_FAMILIES[anchor.family])
 		if (anchor.family && CABLE_FAMILIES[anchor.family]) {
 			anchor.fill(CABLE_FAMILIES[anchor.family].color);
 		}

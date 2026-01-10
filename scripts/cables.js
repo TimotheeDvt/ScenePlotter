@@ -4,6 +4,9 @@ function updateAllCables() {
 }
 
 function createCable(startAnchor, endAnchor, midPoints = [], labelTxt = "", orthoInverse = false) {
+	if (startAnchor.getParent() === endAnchor.getParent()) {
+        return;
+    }
 	const isStartOccupied = cables.some(c => c.fromId === startAnchor.id() || c.toId === startAnchor.id());
 	const isEndOccupied = cables.some(c => c.fromId === endAnchor.id() || c.toId === endAnchor.id());
 

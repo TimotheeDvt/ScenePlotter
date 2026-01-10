@@ -45,10 +45,10 @@ function createCable(startAnchor, endAnchor, midPoints = [], labelTxt = "", orth
 	const handlesGroup = new Konva.Group({ visible: false });
 	const cableObj = { line, fromId: startAnchor.id(), toId: endAnchor.id(), handles: [], isSelected: false, label: null, orthoInverse };
 
-	if (labelTxt) {
-		cableObj.label = new Konva.Text({ text: labelTxt, fontSize: 110, fill: 'white', fontStyle: 'italic' });
-		targetCategoryGroup.add(cableObj.label);
-	}
+	// if (labelTxt) {
+	// 	cableObj.label = new Konva.Text({ text: labelTxt, fontSize: 110, fill: 'white', fontStyle: 'italic' });
+	// 	targetCategoryGroup.add(cableObj.label);
+	// }
 
 	function redraw() { cableRedraw(cableObj, line, isOrtho); }
 
@@ -150,9 +150,9 @@ function cableRedraw(cableObj, line, isOrtho) {
 	line.strokeLinearGradientColorStops([0, sn.fill(), 1, en.fill()]);
 	line.points(isOrtho ? getOrthoPoints(pts, cableObj.orthoInverse) : pts);
 
-	if (cableObj.label) {
-		cableObj.label.position({ x: (startPos.x + endPos.x) / 2, y: (startPos.y + endPos.y) / 2 - 15 });
-	}
+	// if (cableObj.label) {
+	// 	cableObj.label.position({ x: (startPos.x + endPos.x) / 2, y: (startPos.y + endPos.y) / 2 - 15 });
+	// }
 
 	if (selectedCable === cableObj) {
 		const lengthInput = document.getElementById('cable-length');
@@ -202,7 +202,7 @@ function toggleAllCablesVisibility() {
 	allCablesVisible = !allCablesVisible;
 	cables.forEach(c => {
 		if (c.line) c.line.visible(allCablesVisible);
-		if (c.label) c.label.visible(allCablesVisible);
+		// if (c.label) c.label.visible(allCablesVisible);
 		if (!allCablesVisible && c.handlesGroup) {
 			c.handlesGroup.visible(false);
 		}

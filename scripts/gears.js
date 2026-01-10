@@ -119,7 +119,7 @@ function addUI(group, nativeImg, labelText, width, height) {
 	});
 
 	const label = new Konva.Text({
-		text: labelText, fontSize: 12, fill: 'white', y: finalWidth + 50,
+		text: labelText, fontSize: 120, fill: 'white', y: finalHeight + 50,
 		width: finalWidth, align: 'center', fontStyle: 'bold',
 		listening: false, visible: labelText !== ""
 	});

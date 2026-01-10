@@ -19,6 +19,21 @@ tr.on('transform', () => {
 
 tr.on('transformend', () => { updateAllCables(); saveHistory(); });
 
+tr.on('dragmove', (e) => {
+	selectedGears.forEach(g => {
+		const cableObj = cables.find(c => c.fromId.includes(g.id()) || c.toId.includes(g.id()));
+
+		if (cableObj && cableObj.handles.length > 0) {
+			cableObj.handles.forEach(h => {
+				h.x(h.x() + e.evt.movementX / stage.scaleX());
+				h.y(h.y() + e.evt.movementY / stage.scaleY());
+			});
+		}
+	});
+
+	updateAllCables();
+});
+
 // Zoom
 stage.on('wheel', (e) => {
 	e.evt.preventDefault();
@@ -188,6 +203,7 @@ window.addEventListener('mouseup', (e) => {
 				c.isSelected = true;
 				c.line.strokeWidth(80);
 				if (c.handlesGroup) c.handlesGroup.visible(true);
+				if (!newlySelectedElements.includes(c.line)) newlySelectedElements.push(c.line);
 			} else if (!e.shiftKey && !e.ctrlKey) {
 				c.isSelected = false;
 				c.line.strokeWidth(40);

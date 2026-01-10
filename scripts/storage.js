@@ -173,6 +173,7 @@ function applyHistory(step) {
 
 function exportScene(format) {
 	alert("Ca marche pas encore très bien donc prend un screenshot en attendant :)");
+	return;
 	const items = mainLayer.getChildren(node => {
 		return node.visible() && (node.hasName('gear') || node.hasName('free-text'));
 	});

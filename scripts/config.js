@@ -40,12 +40,12 @@ const stage = new Konva.Stage({
 	height: container.offsetHeight
 });
 
+const categoryLayers = {};
 const gridLayer = new Konva.Layer();
 const cableLayer = new Konva.Layer();
-const mainLayer = new Konva.Layer();
 const tempLayer = new Konva.Layer();
 
-stage.add(gridLayer, cableLayer, mainLayer, tempLayer);
+stage.add(gridLayer, cableLayer, tempLayer);
 
 // Shared Transformer
 const tr = new Konva.Transformer({
@@ -58,7 +58,7 @@ const tr = new Konva.Transformer({
 	rotationSnaps: [0, 45, 90, 135, 180, 225, 270, 315],
 	rotationSnapTolerance: 10
 });
-mainLayer.add(tr);
+tempLayer.add(tr);
 
 // Drag line for cable creation
 const dragLine = new Konva.Line({
@@ -101,6 +101,4 @@ measurementEndCircle = new Konva.Circle({
 	listening: false
 });
 
-tempLayer.add(measurementStartCircle, measurementEndCircle);
-
-tempLayer.add(measurementLine, measurementText);
+tempLayer.add(measurementStartCircle, measurementEndCircle, measurementLine, measurementText);

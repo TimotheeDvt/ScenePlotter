@@ -7,12 +7,15 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", connecti
 
 		group.connections = connections;
 
+		const preset = SVG_LIBRARY.find(item => src.includes(item.path));
+		const category = preset ? (preset.category || "Notes") : "Notes";
+		const targetLayer = categoryLayers[category];
+
 		addUI(group, nativeImg, labelText, width, height);
 
 		if (anchorData && anchorData.length > 0) {
 			anchorData.forEach(ad => createSingleAnchor(group, ad.x, ad.y, ad.family, ad.iotype, ad.id));
 		} else if (width && height) {
-			const preset = SVG_LIBRARY.find(item => src.includes(item.path));
 			if (preset && preset.fixedAnchors) {
 				preset.fixedAnchors.forEach(fa => {
 					const scaleX = width / preset.width;
@@ -27,8 +30,11 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", connecti
 		}
 
 		addEventListenersGroup(group);
+
+		targetLayer.add(group);
+
 		if (!isApplyingHistory) saveHistory();
-		mainLayer.batchDraw();
+		targetLayer.batchDraw();
 	};
 	nativeImg.src = src;
 }
@@ -120,7 +126,6 @@ function addUI(group, nativeImg, labelText, width, height) {
 	});
 
 	group.add(img, label);
-	mainLayer.add(group);
 }
 
 function addEventListenersGroup(group) {
@@ -189,7 +194,7 @@ function addEventListenersAnchor(c, img, group) {
 		}
 
 		const newRotation = calculateAnchorRotation(c.x(), c.y(), w, h, c.iotype);
-        c.rotation(newRotation);
+		c.rotation(newRotation);
 		updateAllCables();
 	});
 
@@ -197,7 +202,9 @@ function addEventListenersAnchor(c, img, group) {
 		e.cancelBubble = true;
 		group.find('.virtual-anchor').forEach(va => va.destroy());
 		showAnchorsOfGear(group, true);
-		mainLayer.draw();
+		if (group.getLayer()) {
+			group.getLayer().draw();
+		}
 		saveHistory();
 	});
 }
@@ -228,13 +235,12 @@ function showAnchorsOfGear(group, v) {
 	if (!v) {
 		group.find('.anchor').forEach(a => {
 			const isSelectedCableAnchor = selectedCable && (a.id() === selectedCable.fromId || a.id() === selectedCable.toId);
-
 			if (!isSelectedCableAnchor) {
 				a.visible(false);
 				a.listening(false);
 			}
 		});
-		mainLayer.batchDraw();
+		group.getLayer().batchDraw();
 		return;
 	}
 
@@ -246,55 +252,39 @@ function showAnchorsOfGear(group, v) {
 				a.listening(false);
 				return;
 			}
-			let isCompatible = false;
-			if (activeAnchor.family === 'aes') {
-				isCompatible = (a.family === 'aes');
-			} else {
-				isCompatible = (a.family === activeAnchor.family && a.iotype !== activeAnchor.iotype);
-			}
+			let isCompatible = (activeAnchor.family === 'aes')
+				? (a.family === 'aes')
+				: (a.family === activeAnchor.family && a.iotype !== activeAnchor.iotype);
+
 			a.visible(isCompatible);
 			a.listening(isCompatible);
-			if (isCompatible) {
-				a.opacity(1);
-				a.strokeWidth(5);
-			}
+			if (isCompatible) { a.opacity(1); a.strokeWidth(5); }
 		} else {
-			a.visible(true);
-			a.listening(true);
-			a.opacity(1);
-			if (occupied) {
-				a.strokeWidth(0);
-			} else {
-				a.strokeWidth(5);
-			}
+			a.visible(true); a.listening(true); a.opacity(1);
+			a.strokeWidth(occupied ? 0 : 5);
 		}
 	});
-	mainLayer.batchDraw();
+	group.getLayer().batchDraw();
 }
 
 function showAllAnchors(v, filterFamily = null, filterType = null) {
 	stage.find('.anchor').forEach(a => {
 		if (!v || isAnchorOccupied(a.id())) {
-			a.visible(false);
-			a.listening(false);
+			a.visible(false); a.listening(false);
 		} else if (filterFamily === 'aes') {
 			const isAes = a.family === 'aes';
-			a.visible(isAes);
-			a.listening(isAes);
+			a.visible(isAes); a.listening(isAes);
 			if (isAes) a.opacity(1);
 		} else if (filterFamily && filterType) {
 			const isCompatible = (a.family === filterFamily && a.iotype !== filterType);
-			a.visible(isCompatible);
-			a.listening(isCompatible);
+			a.visible(isCompatible); a.listening(isCompatible);
 			if (isCompatible) a.opacity(1);
 		} else {
-			a.visible(true);
-			a.listening(true);
-			a.opacity(1);
+			a.visible(true); a.listening(true); a.opacity(1);
 		}
 		if (a.visible()) a.strokeWidth(5);
 	});
-	mainLayer.batchDraw();
+	batchDrawAllCatLayers();
 }
 
 function isAnchorOccupied(anchorId) {
@@ -308,7 +298,8 @@ function resetAnchorAfterDelete(anchorId) {
 			anchor.fill(CABLE_FAMILIES[anchor.family].color);
 		}
 		anchor.opacity(0);
-
-		mainLayer.draw();
+		if (anchor.getLayer()) {
+			anchor.getLayer().draw();
+		}
 	}
 }

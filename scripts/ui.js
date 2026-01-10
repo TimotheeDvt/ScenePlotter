@@ -79,11 +79,11 @@ function selectCable(cableObj) {
 			a.opacity(1);
 			a.strokeWidth(5);
 			a.listening(true);
+			if (a.getLayer()) a.getLayer().batchDraw();
 		}
 	});
 
 	cableLayer.batchDraw();
-	mainLayer.batchDraw();
 	updateSelectionUI();
 }
 
@@ -135,6 +135,7 @@ function deselectAll() {
 			if (a) {
 				a.visible(false);
 				a.listening(false);
+				if (a.getLayer()) a.getLayer().batchDraw();
 			}
 		});
 	}
@@ -151,7 +152,7 @@ function deselectAll() {
 	document.getElementById('cable-props').style.display = 'none';
 	document.getElementById('selection-actions').style.display = 'none';
 	document.getElementById('prop-title').innerText = "Stage properties";
-	mainLayer.batchDraw();
+	batchDrawAllCatLayers();
 	cableLayer.batchDraw();
 	tempLayer.batchDraw();
 	showAllAnchors(false);
@@ -170,7 +171,9 @@ function executeDelete() {
 				}
 				return true;
 			});
+			const layer = gear.getLayer();
 			gear.destroy();
+			if (layer) layer.batchDraw();
 		});
 	} else if (selectedCable) {
 		resetAnchorAfterDelete(selectedCable.fromId);
@@ -280,7 +283,10 @@ document.getElementById('prop-label').oninput = (e) => {
 	if (selectedGears.length === 1) {
 		const t = selectedGears[0].findOne('Text');
 		t.text(e.target.value); t.visible(e.target.value !== "");
-		mainLayer.batchDraw(); saveHistory();
+		if (gear.getLayer()) {
+			gear.getLayer().batchDraw();
+		}
+		saveHistory();
 	}
 };
 document.getElementById('prop-size-cm').oninput = (e) => {
@@ -325,30 +331,41 @@ document.getElementById('cable-color-picker').oninput = (e) => {
 	});
 
 	cableLayer.draw();
-	mainLayer.draw();
+	if (categoryLayers[startAnchor.getLayer().name()]) {
+		categoryLayers[startAnchor.getLayer().name()].batchDraw();
+	}
 	saveHistory();
 };
 
 document.getElementById('note-text-input').oninput = (e) => {
 	if (selectedGears.length === 1 && selectedGears[0].hasName('free-text')) {
-		selectedGears[0].text(e.target.value);
-		mainLayer.batchDraw();
+		const note = selectedGears[0];
+		note.text(e.target.value);
+		if (note.getLayer()) {
+			note.getLayer().batchDraw();
+		}
 		saveHistory();
 	}
 };
 
 document.getElementById('note-color-picker').oninput = (e) => {
 	if (selectedGears.length === 1 && selectedGears[0].hasName('free-text')) {
-		selectedGears[0].fill(e.target.value);
-		mainLayer.batchDraw();
+		const note = selectedGears[0];
+		note.fill(e.target.value);
+		if (note.getLayer()) {
+			note.getLayer().batchDraw();
+		}
 		saveHistory();
 	}
 };
 
 document.getElementById('note-size-input').oninput = (e) => {
 	if (selectedGears.length === 1 && selectedGears[0].hasName('free-text')) {
-		selectedGears[0].fontSize(parseInt(e.target.value));
-		mainLayer.batchDraw();
+		const note = selectedGears[0];
+		note.fontSize(parseInt(e.target.value));
+		if (note.getLayer()) {
+			note.getLayer().batchDraw();
+		}
 		saveHistory();
 	}
 };
@@ -397,7 +414,6 @@ function changeCableColor(family) {
 			c.line.stroke(newColor);
 			const en = stage.findOne('#' + c.toId);
 			if (en) {
-				const endPos = en.getAbsolutePosition(stage);
 				c.line.strokeLinearGradientColorStops([0, newColor, 1, en.fill()]);
 			}
 		}
@@ -408,15 +424,32 @@ function changeCableColor(family) {
 		}
 	});
 	cableLayer.batchDraw();
-	mainLayer.batchDraw();
+	batchDrawAllCatLayers();
+
 	saveHistory();
 }
+
 // --- LIBRARY ---
+function initCategoryLayers() {
+	const categories = [...new Set(SVG_LIBRARY.map(item => item.category || "Notes")), "Notes"];
+	categories.forEach(cat => {
+		const layer = new Konva.Layer({ name: cat });
+		stage.add(layer);
+		categoryLayers[cat] = layer;
+	});
+	cableLayer.moveToTop();
+	tempLayer.moveToTop();
+}
+
+initCategoryLayers();
+refreshLayerToggles();
+
+document.getElementById('projName').value = genName();
 if (typeof SVG_LIBRARY !== 'undefined') {
 	const lib = document.getElementById('library-container');
 	const cats = {};
 	SVG_LIBRARY.forEach(f => {
-		const cat = (f.category || "Miscellaneous").toLowerCase();
+		const cat = (f.category || "Notes").toLowerCase();
 		if (!cats[cat]) cats[cat] = [];
 		cats[cat].push(f);
 	});
@@ -548,12 +581,14 @@ function addNewNote(text = "Nouvelle note", x = 100, y = 100, color = "#ffffff",
 		name: 'free-text'
 	});
 
+	const targetLayer = categoryLayers["Notes"];
+
 	note.on('dragmove', () => {
 		note.position({
 			x: Math.round(note.x() / SNAP_SIZE) * SNAP_SIZE,
 			y: Math.round(note.y() / SNAP_SIZE) * SNAP_SIZE
 		});
-		mainLayer.batchDraw();
+		if (note.getLayer()) note.getLayer().batchDraw();
 	});
 
 	note.on('click tap', (e) => {
@@ -571,13 +606,15 @@ function addNewNote(text = "Nouvelle note", x = 100, y = 100, color = "#ffffff",
 			}
 		}
 		updateSelectionUI();
-		mainLayer.batchDraw();
+		if (note.getLayer()) note.getLayer().batchDraw();
 	});
 
-	mainLayer.add(note);
+	if (targetLayer) {
+		targetLayer.add(note);
+		targetLayer.batchDraw();
+	}
 	selectedGears = [note];
 	updateSelectionUI();
-	mainLayer.batchDraw();
 	saveHistory();
 }
 
@@ -612,13 +649,14 @@ function updateGearConnections(family, type, value) {
 	if (!gear.connections[family]) gear.connections[family] = { in: 0, out: 0 };
 	gear.connections[family][type] = parseInt(value) || 0;
 
-	// On régénère les ancres
 	gear.find('.anchor').forEach(a => a.destroy());
 	generateDefaultAnchors(gear, gear.connections);
 
 	updateAllCables();
 	saveHistory();
-	mainLayer.draw();
+	if (gear.getLayer()) {
+		gear.getLayer().draw();
+	}
 }
 
 let colorHistory = Object.values(CABLE_FAMILIES).map(f => f.color);
@@ -661,3 +699,42 @@ function updateHistoryUI() {
 	});
 }
 updateHistoryUI();
+
+function refreshLayerToggles() {
+	const container = document.getElementById('layer-toggles-container');
+	if (!container) return;
+	container.innerHTML = '';
+
+	Object.keys(categoryLayers).forEach(cat => {
+		const div = document.createElement('div');
+		div.className = 'toggle-container';
+		div.innerHTML = `
+            <label style="margin:0; font-size: 10px;">${cat}</label>
+            <label class="switch">
+                <input type="checkbox" checked onchange="toggleCategoryLayer('${cat}', this.checked)">
+                <span class="slider"></span>
+            </label>
+        `;
+		container.appendChild(div);
+	});
+}
+
+function toggleCategoryLayer(category, isVisible) {
+	const layer = categoryLayers[category];
+	layer.visible(isVisible);
+
+	cables.forEach(c => {
+		const startNode = stage.findOne('#' + c.fromId);
+		if (startNode && startNode.getLayer() === layer) {
+			c.line.visible(isVisible);
+			if (c.label) c.label.visible(isVisible);
+		}
+	});
+
+	layer.batchDraw();
+	cableLayer.batchDraw();
+}
+
+function batchDrawAllCatLayers() {
+	Object.values(categoryLayers).forEach(layer => layer.batchDraw());
+}

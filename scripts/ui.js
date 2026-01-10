@@ -307,8 +307,8 @@ document.getElementById('prop-label').oninput = (e) => {
 	if (selectedGears.length === 1) {
 		const t = selectedGears[0].findOne('Text');
 		t.text(e.target.value); t.visible(e.target.value !== "");
-		if (gear.getLayer()) {
-			gear.getLayer().batchDraw();
+		if (selectedGears[0].getLayer()) {
+			selectedGears[0].getLayer().batchDraw();
 		}
 		saveHistory();
 	}

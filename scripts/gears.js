@@ -43,7 +43,8 @@ function createSingleAnchor(group, x, y, family, type, id) {
 			rotation: rotation,
 			draggable: true,
 			name: 'anchor',
-			opacity: 0,
+			opacity: 1,
+			visible: false,
 			id: id || group.id() + '-' + family + '-' + type + Math.random()
 		});
 	} else {
@@ -211,45 +212,63 @@ function generateDefaultAnchors(group, connections) {
 
 function showAnchorsOfGear(group, v) {
 	if (!v) {
-		group.find('.anchor').forEach(a => a.opacity(0));
-		mainLayer.draw();
+		group.find('.anchor').forEach(a => {
+			a.visible(false); // On cache pour la performance
+			a.listening(false); // On désactive les interactions
+		});
+		mainLayer.batchDraw();
 		return;
 	}
 
 	group.find('.anchor').forEach(a => {
+		// On ne montre pas les ancres déjà connectées
 		if (isAnchorOccupied(a.id())) {
-			a.opacity(0);
+			a.visible(false);
+			a.listening(false);
 			return;
 		}
 
+		let isVisible = false;
 		if (activeAnchor) {
 			if (activeAnchor.family === 'aes') {
-				a.opacity(a.family === 'aes' ? 1 : 0);
+				isVisible = (a.family === 'aes');
 			} else {
-				const isCompatible = (a.family === activeAnchor.family && a.iotype !== activeAnchor.iotype);
-				a.opacity(isCompatible ? 1 : 0);
+				isVisible = (a.family === activeAnchor.family && a.iotype !== activeAnchor.iotype);
 			}
 		} else {
-			a.opacity(1);
+			isVisible = true;
 		}
+		
+		// On applique la visibilité et on remet l'opacité à 1 pour être sûr qu'elles soient vues
+		a.visible(isVisible);
+		a.listening(isVisible);
+		if (isVisible) a.opacity(1); 
 	});
-	mainLayer.draw();
+	mainLayer.batchDraw();
 }
 
 function showAllAnchors(v, filterFamily = null, filterType = null) {
 	stage.find('.anchor').forEach(a => {
 		if (!v || isAnchorOccupied(a.id())) {
-			a.opacity(0);
+			a.visible(false);
+			a.listening(false);
 		} else if (filterFamily === 'aes') {
-			a.opacity(a.family === 'aes' ? 1 : 0);
+			const isAes = a.family === 'aes';
+			a.visible(isAes);
+			a.listening(isAes);
+			if (isAes) a.opacity(1);
 		} else if (filterFamily && filterType) {
 			const isCompatible = (a.family === filterFamily && a.iotype !== filterType);
-			a.opacity(isCompatible ? 1 : 0);
+			a.visible(isCompatible);
+			a.listening(isCompatible);
+			if (isCompatible) a.opacity(1);
 		} else {
+			a.visible(true);
+			a.listening(true);
 			a.opacity(1);
 		}
 	});
-	mainLayer.draw();
+	mainLayer.batchDraw();
 }
 
 function isAnchorOccupied(anchorId) {

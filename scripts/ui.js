@@ -328,11 +328,16 @@ document.getElementById('cable-color-dmx').oninput = () => {
 function changeCableColor(family) {
 	const newColor = document.getElementById('cable-color-' + family).value;
 	CABLE_FAMILIES[family].color = newColor;
+
 	cables.forEach(c => {
 		const anc = stage.findOne('#' + c.fromId);
 		if (anc && anc.family === family) {
 			c.line.stroke(newColor);
-			c.redraw();
+			const en = stage.findOne('#' + c.toId);
+			if (en) {
+				const endPos = en.getAbsolutePosition(stage);
+				c.line.strokeLinearGradientColorStops([0, newColor, 1, en.fill()]);
+			}
 		}
 	});
 	stage.find('.anchor').forEach(a => {
@@ -340,11 +345,10 @@ function changeCableColor(family) {
 			a.fill(newColor);
 		}
 	});
-	cableLayer.draw();
-	mainLayer.draw();
+	cableLayer.batchDraw();
+	mainLayer.batchDraw();
 	saveHistory();
 }
-
 // --- LIBRARY ---
 if (typeof SVG_LIBRARY !== 'undefined') {
 	const lib = document.getElementById('library-container');
@@ -477,6 +481,7 @@ function addNewNote(text = "Nouvelle note", x = 100, y = 100) {
 			x: Math.round(note.x() / SNAP_SIZE) * SNAP_SIZE,
 			y: Math.round(note.y() / SNAP_SIZE) * SNAP_SIZE
 		});
+		mainLayer.batchDraw();
 	});
 
 	note.on('click tap', (e) => {
@@ -494,13 +499,13 @@ function addNewNote(text = "Nouvelle note", x = 100, y = 100) {
 			}
 		}
 		updateSelectionUI();
-		mainLayer.draw();
+		mainLayer.batchDraw();
 	});
 
 	mainLayer.add(note);
 	selectedGears = [note];
 	updateSelectionUI();
-	mainLayer.draw();
+	mainLayer.batchDraw();
 	saveHistory();
 }
 

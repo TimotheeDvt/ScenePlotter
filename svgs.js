@@ -8,7 +8,17 @@ const SVG_LIBRARY = [
 		"height": 160,
 		"connections": {
 			"xlr": { "in": 0, "out": 8 }
-		}
+		},
+		"fixedAnchors": [
+			{ family: "xlr", type: "out", x: 0.5, y: 0 },
+			{ family: "xlr", type: "out", x: 10, y: 0 },
+			{ family: "xlr", type: "out", x: 20, y: 0 },
+			{ family: "xlr", type: "out", x: 30, y: 0 },
+			{ family: "xlr", type: "out", x: 40, y: 0 },
+			{ family: "xlr", type: "out", x: 50, y: 0 },
+			{ family: "xlr", type: "out", x: 60, y: 0 },
+			{ family: "xlr", type: "out", x: 70, y: 0 }
+		]
 	},
 	{
 		"name": "AGuitar",
@@ -63,13 +73,18 @@ const SVG_LIBRARY = [
 	{
 		"name": "Piano",
 		"path": "piano.png",
-		"electricalNbAnchors": 1,
 		"category": "Instruments",
 		"width": 100,
 		"height": 25,
 		"connections": {
-			"jack": { "in": 0, "out": 2 }
-		}
+			"jack": { "in": 0, "out": 2 },
+			"elec": { "in": 1, "out": 0 }
+		},
+		"fixedAnchors": [
+			{ family: "jack", type: "out", x: 40, y: 0 },
+			{ family: "jack", type: "out", x: 45, y: 0 },
+			{ family: "elec", type: "in", x: 50, y: 0 }
+		]
 	},
 	// Microphones
 	{
@@ -102,7 +117,11 @@ const SVG_LIBRARY = [
 		"connections": {
 			"xlr": { "in": 1, "out": 0 },
 			"elec" : { "in": 1, "out": 0 }
-		}
+		},
+		"fixedAnchors": [
+			{ family: "xlr", type: "in", x: 0, y: 20 },
+			{ family: "elec", type: "in", x: 0, y: 30 }
+		]
 	},
 	{
 		"name": "DL32",
@@ -131,7 +150,12 @@ const SVG_LIBRARY = [
 		"connections": {
 			"elec" : { "in": 1, "out": 0 },
 			"aes" : { "in": 2, "out": 0 }
-		}
+		},
+		"fixedAnchors": [
+			{ family: "aes", type: "in", x: 25, y: 0 },
+			{ family: "aes", type: "out", x: 30, y: 0 },
+			{ family: "elec", type: "in", x: 40, y: 0 }
+		]
 	},
 	{
 		"name": "D.I.",
@@ -153,7 +177,15 @@ const SVG_LIBRARY = [
 		"height": 30,
 		"connections": {
 			"elec": { "in": 1, "out": 5 }
-		}
+		},
+		"fixedAnchors": [
+			{ family: "elec", type: "in", x: 4, y: 30 },
+			{ family: "elec", type: "out", x: 0, y: 5 },
+			{ family: "elec", type: "out", x: 0, y: 10 },
+			{ family: "elec", type: "out", x: 0, y: 15 },
+			{ family: "elec", type: "out", x: 0, y: 20 },
+			{ family: "elec", type: "out", x: 0, y: 25 }
+		]
 	},
 	{
 		"name": "Power outlet",

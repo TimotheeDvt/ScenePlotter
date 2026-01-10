@@ -214,19 +214,37 @@ function updateIO() {
 		const img = gear.findOne('.icon');
 		const w = img.width(), h = img.height();
 		gear.find('.anchor').forEach(a => a.destroy());
-		const outCount = parseInt(document.getElementById('prop-out').value);
-		const inCount = parseInt(document.getElementById('prop-in').value);
-		const total = outCount + inCount;
-		for (let i = 0; i < outCount; i++) {
-			const pos = getRectPos(i, total, w, h);
-			createSingleAnchor(gear, pos.x, pos.y, '#e74c3c', gear.id() + '-out' + i);
-		}
-		for (let i = 0; i < inCount; i++) {
-			const pos = getRectPos(i + outCount, total, w, h);
-			createSingleAnchor(gear, pos.x, pos.y, '#3498db', gear.id() + '-in' + i);
+		const src = img.image().src;
+		const preset = SVG_LIBRARY.find(item => src.includes(item.path));
+
+		if (preset && preset.fixedAnchors) {
+			preset.fixedAnchors.forEach(fa => {
+				const scaleX = w / preset.width;
+				const scaleY = h / preset.height;
+				createSingleAnchor(gear, fa.x * scaleX, fa.y * scaleY, fa.family, fa.type);
+			});
+		} else {
+			const connections = gear.connections;
+			const total = Object.values(connections).reduce((sum, conn) => sum + (conn.in || 0) + (conn.out || 0), 0);
+			let index = 0;
+			Object.keys(connections).forEach(family => {
+				const conn = connections[family];
+				for (let i = 0; i < (conn.in || 0); i++) {
+					const pos = getRectPos(index, total, w, h);
+					createSingleAnchor(gear, pos.x, pos.y, family, 'in');
+					index++;
+				}
+				for (let i = 0; i < (conn.out || 0); i++) {
+					const pos = getRectPos(index, total, w, h);
+					createSingleAnchor(gear, pos.x, pos.y, family, 'out');
+					index++;
+				}
+			});
 		}
 	});
-	updateAllCables(); saveHistory();
+
+	updateAllCables();
+	saveHistory();
 }
 
 // --- BINDINGS ---

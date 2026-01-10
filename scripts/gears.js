@@ -11,6 +11,18 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", connecti
 
 		if (anchorData && anchorData.length > 0) {
 			anchorData.forEach(ad => createSingleAnchor(group, ad.x, ad.y, ad.family, ad.type, ad.id));
+		} else if (width && height) {
+			const preset = SVG_LIBRARY.find(item => src.includes(item.path));
+			if (preset && preset.fixedAnchors) {
+				preset.fixedAnchors.forEach(fa => {
+					// On recalcule la position proportionnellement à la taille actuelle (width/height)
+					const scaleX = width / preset.width;
+					const scaleY = height / preset.height;
+					createSingleAnchor(group, fa.x * scaleX, fa.y * scaleY, fa.family, fa.type);
+				});
+			} else {
+				generateDefaultAnchors(group, connections);
+			}
 		} else {
 			generateDefaultAnchors(group, connections);
 		}

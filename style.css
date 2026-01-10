@@ -231,3 +231,12 @@ input:checked+.slider:before {
 #help-modal.hidden {
   display: none;
 }
+
+#cable-color {
+  width: 100%;
+  height: 50px;
+  border: none;
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+}

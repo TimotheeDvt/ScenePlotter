@@ -309,6 +309,42 @@ document.getElementById('prop-grid-size').onchange = (e) => {
 	saveHistory();
 };
 
+document.getElementById('cable-color-xlr').oninput = () => {
+	changeCableColor('xlr');
+};
+document.getElementById('cable-color-jack').oninput = () => {
+	changeCableColor('jack');
+};
+document.getElementById('cable-color-elec').oninput = () => {
+	changeCableColor('elec');
+};
+document.getElementById('cable-color-aes').oninput = () => {
+	changeCableColor('aes');
+};
+document.getElementById('cable-color-dmx').oninput = () => {
+	changeCableColor('dmx');
+};
+
+function changeCableColor(family) {
+	const newColor = document.getElementById('cable-color-' + family).value;
+	CABLE_FAMILIES[family].color = newColor;
+	cables.forEach(c => {
+		const anc = stage.findOne('#' + c.fromId);
+		if (anc && anc.family === family) {
+			c.line.stroke(newColor);
+			c.redraw();
+		}
+	});
+	stage.find('.anchor').forEach(a => {
+		if (a.family === family) {
+			a.fill(newColor);
+		}
+	});
+	cableLayer.draw();
+	mainLayer.draw();
+	saveHistory();
+}
+
 // --- LIBRARY ---
 if (typeof SVG_LIBRARY !== 'undefined') {
 	const lib = document.getElementById('library-container');

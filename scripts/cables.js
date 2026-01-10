@@ -7,7 +7,7 @@ function createCable(startAnchor, endAnchor, midPoints = [], labelTxt = "", orth
     if (startAnchor.family !== endAnchor.family) {
         return;
     }
-    if (startAnchor.iotype === endAnchor.iotype) {
+    if (startAnchor.iotype === endAnchor.iotype && startAnchor.family !== 'aes') {
         return;
     }
 

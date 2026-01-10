@@ -36,7 +36,7 @@ function loadStage(event) {
 			data.notes.forEach(n => addNewNote(n.text, n.x, n.y));
 		}
 		document.getElementById('orthoToggle').checked = isOrtho;
-		data.gear.forEach(g => addEquipment("svgs/" + g.src, g.x, g.y, g.id, g.label, g.outCount, g.inCount, g.anchors, g.width, g.height));
+		data.gear.forEach(g => addEquipment("svgs/" + g.src, g.x, g.y, g.id, g.label, g.connections || {}, g.anchors, g.width, g.height));
 		setTimeout(() => {
 			data.cables.forEach(c => {
 				const sn = stage.findOne('#' + c.fromId); const en = stage.findOne('#' + c.toId);
@@ -78,7 +78,7 @@ function applyHistory(step) {
 	cables.forEach(c => { c.line.destroy(); c.handlesGroup.destroy(); if (c.label) c.label.destroy(); });
 	cables = [];
 	mainLayer.getChildren().filter(c => c.hasName('free-text')).forEach(n => n.destroy());
-	state.gear.forEach(g => addEquipment(g.src, g.x, g.y, g.id, g.label, g.outCount, g.inCount, g.anchors, g.width, g.height));
+	state.gear.forEach(g => addEquipment(g.src, g.x, g.y, g.id, g.label, g.connections || {}, g.anchors, g.width, g.height));
 	setTimeout(() => {
 		state.cables.forEach(c => {
 			const sn = stage.findOne('#' + c.fromId); const en = stage.findOne('#' + c.toId);

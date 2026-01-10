@@ -9,7 +9,7 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", connecti
 
         addUI(group, nativeImg, labelText, width, height);
 
-        if (anchorData) {
+        if (anchorData && anchorData.length > 0) {
             anchorData.forEach(ad => createSingleAnchor(group, ad.x, ad.y, ad.family, ad.type, ad.id));
         } else {
             generateDefaultAnchors(group, connections);
@@ -23,28 +23,56 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", connecti
 }
 
 function createSingleAnchor(group, x, y, family, type, id) {
-	const img = group.findOne('.icon');
-	const color = CABLE_FAMILIES[family] ? CABLE_FAMILIES[family].color : '#888';
-	const triangle = new Konva.RegularPolygon({
+    const img = group.findOne('.icon');
+    const color = CABLE_FAMILIES[family] ? CABLE_FAMILIES[family].color : '#888';
+    const rotation = calculateAnchorRotation(x, y, img.width(), img.height(), type);
+
+    const triangle = new Konva.RegularPolygon({
         x: x, y: y,
         sides: 3,
         radius: 40,
         fill: color,
         stroke: 'white',
         strokeWidth: 5,
-        rotation: type === 'in' ? 180 : 0,
+        rotation: rotation,
+        draggable: true,
         name: 'anchor',
         id: id || group.id() + '-' + family + '-' + type + Math.random()
     });
-	triangle.oldColor = color;
 
-	triangle.family = family;
-	triangle.iotype = type;
+    triangle.family = family;
+    triangle.iotype = type;
 
-	addEventListenersAnchor(triangle, img, group);
+    triangle.on('dragmove', () => {
+        const w = img.width();
+        const h = img.height();
+        let cx = triangle.x();
+        let cy = triangle.y();
 
-	group.add(triangle);
-	return triangle;
+        if (Math.abs(cx - w/2) / w > Math.abs(cy - h/2) / h) {
+            triangle.x(cx > w/2 ? w : 0);
+            triangle.y(Math.max(0, Math.min(h, cy)));
+        } else {
+            triangle.y(cy > h/2 ? h : 0);
+            triangle.x(Math.max(0, Math.min(w, cx)));
+        }
+
+        triangle.rotation(calculateAnchorRotation(triangle.x(), triangle.y(), w, h, type));
+        updateAllCables();
+    });
+
+    addEventListenersAnchor(triangle, img, group);
+    group.add(triangle);
+}
+
+function calculateAnchorRotation(x, y, w, h, type) {
+    let baseAngle = 0;
+    if (x <= 0) baseAngle = -90;
+    else if (x >= w) baseAngle = 90;
+    else if (y <= 0) baseAngle = 0;
+    else if (y >= h) baseAngle = 180;
+
+    return type === 'in' ? baseAngle + 180 : baseAngle;
 }
 
 function createVirtualAnchor(group, x, y) {

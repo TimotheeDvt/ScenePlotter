@@ -249,10 +249,11 @@ document.getElementById('cable-color-picker').oninput = (e) => {
 
     CABLE_FAMILIES[family].color = newColor;
 
-    cables.forEach(c => {
+	cables.forEach(c => {
         const anc = stage.findOne('#' + c.fromId);
         if (anc && anc.family === family) {
             c.line.stroke(newColor);
+            c.redraw();
         }
     });
     stage.find('.anchor').forEach(a => {

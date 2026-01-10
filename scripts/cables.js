@@ -5,11 +5,9 @@ function updateAllCables() {
 
 function createCable(startAnchor, endAnchor, midPoints = [], labelTxt = "", orthoInverse = false) {
     if (startAnchor.family !== endAnchor.family) {
-        alert("Incompatible : Les familles de câbles doivent être identiques.");
         return;
     }
     if (startAnchor.iotype === endAnchor.iotype) {
-        alert("Incompatible : Connectez un 'In' vers un 'Out'.");
         return;
     }
 

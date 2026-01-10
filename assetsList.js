@@ -2,7 +2,7 @@ const SVG_LIBRARY = [
 	// Instruments
 	{
 		"name": "Drums",
-		"path": "drums.png",
+		"path": "drums",
 		"category": "Instruments",
 		"width": 200,
 		"height": 160,
@@ -22,7 +22,7 @@ const SVG_LIBRARY = [
 	},
 	{
 		"name": "AGuitar",
-		"path": "acc_guitar.png",
+		"path": "acc_guitar",
 		"category": "Instruments",
 		"width": 30,
 		"height": 20,
@@ -32,7 +32,7 @@ const SVG_LIBRARY = [
 	},
 	{
 		"name": "EGuitar",
-		"path": "elec_guitar.png",
+		"path": "elec_guitar",
 		"category": "Instruments",
 		"width": 30,
 		"height": 30,
@@ -52,7 +52,7 @@ const SVG_LIBRARY = [
 	},
 	{
 		"name": "Trumpet",
-		"path": "trumpet.png",
+		"path": "trumpet",
 		"category": "Instruments",
 		"width": 45,
 		"height": 15,
@@ -62,7 +62,7 @@ const SVG_LIBRARY = [
 	},
 	{
 		"name": "Violin",
-		"path": "violin.png",
+		"path": "violin",
 		"category": "Instruments",
 		"width": 30,
 		"height": 40,
@@ -72,7 +72,7 @@ const SVG_LIBRARY = [
 	},
 	{
 		"name": "Piano",
-		"path": "piano.png",
+		"path": "piano",
 		"category": "Instruments",
 		"width": 100,
 		"height": 25,
@@ -89,7 +89,7 @@ const SVG_LIBRARY = [
 	// Microphones
 	{
 		"name": "SM58",
-		"path": "SM58.png",
+		"path": "sm58",
 		"category": "Microphones",
 		"width": 5.1,
 		"height": 16.2,
@@ -99,7 +99,7 @@ const SVG_LIBRARY = [
 	},
 	{
 		"name": "SM57",
-		"path": "SM57.png",
+		"path": "sm57",
 		"category": "Microphones",
 		"width": 4.2,
 		"height": 15.7,
@@ -110,7 +110,7 @@ const SVG_LIBRARY = [
 	// Audio Gear
 	{
 		"name": "DBR10",
-		"path": "DBR10.png",
+		"path": "DBR10",
 		"category": "Audio",
 		"width": 30.8,
 		"height": 49.3,
@@ -125,7 +125,7 @@ const SVG_LIBRARY = [
 	},
 	{
 		"name": "DL32",
-		"path": "DL32.png",
+		"path": "DL32",
 		"outputNbAnchors": 16,
 		"inputNbAnchors": 32,
 		"electricalNbAnchors": 1,
@@ -140,7 +140,7 @@ const SVG_LIBRARY = [
 	},
 	{
 		"name": "M32R",
-		"path": "M32.png",
+		"path": "M32R",
 		"outputNbAnchors": 1,
 		"inputNbAnchors": 1,
 		"electricalNbAnchors": 1,
@@ -159,7 +159,7 @@ const SVG_LIBRARY = [
 	},
 	{
 		"name": "D.I.",
-		"path": "DI.png",
+		"path": "DI",
 		"category": "Audio",
 		"width": 8.6,
 		"height": 14.7,
@@ -171,7 +171,7 @@ const SVG_LIBRARY = [
 	// Electricity
 	{
 		"name": "Power Strip",
-		"path": "multiprise.png",
+		"path": "multiprise",
 		"category": "Electricity",
 		"width": 8,
 		"height": 30,
@@ -189,7 +189,7 @@ const SVG_LIBRARY = [
 	},
 	{
 		"name": "Power outlet",
-		"path": "prise.png",
+		"path": "prise",
 		"category": "Electricity",
 		"width": 8,
 		"height": 8,

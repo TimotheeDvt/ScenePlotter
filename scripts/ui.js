@@ -489,7 +489,8 @@ if (typeof SVG_LIBRARY !== 'undefined') {
 
 		cats[catName].forEach(f => {
 			const item = document.createElement('div'); item.className = 'bank-item';
-			const path = `assets/${f.path || f}`;
+			const base64Image = getBase64FromSVGPath(f.path || f);
+			const path = base64Image
 			item.innerHTML = `<img src="${path}"><span>${f.name || f}</span>`;
 
 			item.onclick = () => {
@@ -507,15 +508,21 @@ if (typeof SVG_LIBRARY !== 'undefined') {
 					null,
 					"",
 					f.connections || {},
-					null,
+					f.anchors || null,
 					(f.width ?? 80) * PX_PER_CM,
-					(f.height ?? 80) * PX_PER_CM
+					(f.height ?? 80) * PX_PER_CM,
+					0,
+					f.path
 				)
 			};
 			grid.appendChild(item);
 		});
 		lib.appendChild(title); lib.appendChild(grid);
 	}
+}
+
+function getBase64FromSVGPath(path) {
+	return base64Imgs[path];
 }
 
 // --- UTILS ---

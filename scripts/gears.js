@@ -1,4 +1,4 @@
-function addEquipment(src, x = 100, y = 100, id = null, labelText = "", connections = {}, anchorData = null, width = null, height = null, rotation = 0) {
+function addEquipment(src, x = 100, y = 100, id = null, labelText = "", connections = {}, anchorData = null, width = null, height = null, rotation = 0, path = null) {
 	const nativeImg = new Image();
 	nativeImg.onload = () => {
 		const group = new Konva.Group({
@@ -7,7 +7,7 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", connecti
 
 		group.connections = connections;
 
-		const preset = SVG_LIBRARY.find(item => src.includes(item.path));
+		const preset = SVG_LIBRARY.find(item => item.path === path);
 		const category = preset ? (preset.category || "Notes") : "Notes";
 		const targetGroup = categoryGroups[category] || categoryGroups["Notes"];
 

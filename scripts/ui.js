@@ -57,6 +57,8 @@ function selectGear(group, isMulti = false) {
 }
 
 function selectCable(cableObj) {
+	if (selectedCable === cableObj) return;
+
 	deselectAll();
 	selectedCable = cableObj;
 	cableObj.isSelected = true;
@@ -68,21 +70,21 @@ function selectCable(cableObj) {
 	document.getElementById('cable-props').style.display = 'block';
 	document.getElementById('selection-actions').style.display = 'block';
 	document.getElementById('prop-title').innerText = "Cable Properties";
-	document.getElementById('cable-label').value = cableObj.label ? cableObj.label.text() : "";
-	document.getElementById('cable-color-picker').value = cableObj.line.stroke();
-	const length = calculateCableLength(cableObj);
-	const lengthInput = document.getElementById('cable-length');
-	if (lengthInput) {
-		const lengthCm = parseFloat(length);
-		if (lengthCm >= 100) {
-			const meters = Math.floor(lengthCm / 100);
-			const centimeters = Math.round(lengthCm % 100);
-			lengthInput.value = `${meters} m ${centimeters} cm`;
-		} else {
-			lengthInput.value = `${Math.round(lengthCm)} cm`;
+
+	const anc1 = stage.findOne('#' + cableObj.fromId);
+	const anc2 = stage.findOne('#' + cableObj.toId);
+	[anc1, anc2].forEach(a => {
+		if (a) {
+			a.visible(true);
+			a.opacity(1);
+			a.strokeWidth(5);
+			a.listening(true);
 		}
-	}
-	cableLayer.draw(); tempLayer.draw();
+	});
+
+	cableLayer.batchDraw();
+	mainLayer.batchDraw();
+	updateSelectionUI();
 }
 
 function updateSelectionUI() {
@@ -126,14 +128,32 @@ function updateSelectionUI() {
 }
 
 function deselectAll() {
-	tr.nodes([]); selectedGears = []; selectedCable = null;
-	cables.forEach(c => { c.isSelected = false; c.line.strokeWidth(40); if (c.handlesGroup) c.handlesGroup.visible(false); });
+	if (selectedCable) {
+		const anc1 = stage.findOne('#' + selectedCable.fromId);
+		const anc2 = stage.findOne('#' + selectedCable.toId);
+		[anc1, anc2].forEach(a => {
+			if (a) {
+				a.visible(false);
+				a.listening(false);
+			}
+		});
+	}
+	tr.nodes([]);
+	selectedGears = [];
+	selectedCable = null;
+	cables.forEach(c => {
+		c.isSelected = false;
+		c.line.strokeWidth(40);
+		if (c.handlesGroup) c.handlesGroup.visible(false);
+	});
 	document.getElementById('canvas-props').style.display = 'block';
 	document.getElementById('gear-props').style.display = 'none';
 	document.getElementById('cable-props').style.display = 'none';
 	document.getElementById('selection-actions').style.display = 'none';
 	document.getElementById('prop-title').innerText = "Stage properties";
-	cableLayer.draw(); tempLayer.draw();
+	mainLayer.batchDraw();
+	cableLayer.batchDraw();
+	tempLayer.batchDraw();
 	showAllAnchors(false);
 }
 

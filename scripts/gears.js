@@ -213,8 +213,12 @@ function generateDefaultAnchors(group, connections) {
 function showAnchorsOfGear(group, v) {
 	if (!v) {
 		group.find('.anchor').forEach(a => {
-			a.visible(false);
-			a.listening(false);
+			const isSelectedCableAnchor = selectedCable && (a.id() === selectedCable.fromId || a.id() === selectedCable.toId);
+
+			if (!isSelectedCableAnchor) {
+				a.visible(false);
+				a.listening(false);
+			}
 		});
 		mainLayer.batchDraw();
 		return;

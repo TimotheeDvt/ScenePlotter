@@ -244,7 +244,7 @@ window.addEventListener('keydown', (e) => {
 		updateSelectionUI();
 		mainLayer.batchDraw();
 	}
-	if (e.ctrlKey && e.key === 'z') { if (historyStep > 0) applyHistory(--historyStep); }
+	if (e.ctrlKey && e.key === 'z') { e.preventDefault(); if (historyStep > 0) applyHistory(--historyStep); }
 	if (e.ctrlKey && e.key === 'y') { if (historyStep < history.length - 1) applyHistory(++historyStep); }
 	if (e.key === 'Escape') {
 		const help = document.getElementById('help-modal');

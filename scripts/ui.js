@@ -620,3 +620,44 @@ function updateGearConnections(family, type, value) {
 	saveHistory();
 	mainLayer.draw();
 }
+
+let colorHistory = Object.values(CABLE_FAMILIES).map(f => f.color);
+let lastUsedPicker = null;
+
+document.querySelectorAll('input[type="color"]').forEach(picker => {
+	picker.addEventListener('mousedown', () => {
+		lastUsedPicker = picker;
+	});
+
+	picker.addEventListener('change', (e) => {
+		const newColor = e.target.value.toUpperCase();
+
+		if (!colorHistory.includes(newColor)) {
+			colorHistory.unshift(newColor);
+			if (colorHistory.length > 8) colorHistory.pop();
+			updateHistoryUI();
+		}
+	});
+});
+
+function updateHistoryUI() {
+	const container = document.getElementById('color-history-list');
+	if (!container) return;
+
+	container.innerHTML = '';
+	colorHistory.forEach(color => {
+		const swatch = document.createElement('div');
+		swatch.className = 'history-swatch';
+		swatch.style.backgroundColor = color;
+		swatch.title = color;
+
+		swatch.onclick = () => {
+			if (lastUsedPicker) {
+				lastUsedPicker.value = color;
+				lastUsedPicker.dispatchEvent(new Event('input'));
+			}
+		};
+		container.appendChild(swatch);
+	});
+}
+updateHistoryUI();

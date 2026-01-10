@@ -412,16 +412,26 @@ if (typeof SVG_LIBRARY !== 'undefined') {
 			const path = `assets/${f.path || f}`;
 			item.innerHTML = `<img src="${path}"><span>${f.name || f}</span>`;
 
-			item.onclick = () => addEquipment(
-				path,
-				150, 150,
-				null,
-				"",
-				f.connections || {}, // On passe l'objet de connexions au lieu de in/out
-				null,
-				(f.width ?? 80) * PX_PER_CM,
-				(f.height ?? 80) * PX_PER_CM
-			);
+			item.onclick = () => {
+				const viewCenter = {
+					x: container.offsetWidth / 2,
+					y: container.offsetHeight / 2
+				};
+
+				const transform = stage.getAbsoluteTransform().copy().invert();
+				const stagePos = transform.point(viewCenter);
+				addEquipment(
+					path,
+					stagePos.x,
+					stagePos.y,
+					null,
+					"",
+					f.connections || {},
+					null,
+					(f.width ?? 80) * PX_PER_CM,
+					(f.height ?? 80) * PX_PER_CM
+				)
+			};
 			grid.appendChild(item);
 		});
 		lib.appendChild(title); lib.appendChild(grid);

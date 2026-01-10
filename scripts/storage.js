@@ -78,8 +78,10 @@ function loadStage(event) {
 				if (sn && en) createCable(sn, en, c.midPoints, c.label, c.orthoInverse);
 			});
 			mainLayer.batchDraw();
-			cableLayer.batchDraw();
 		}, 300);
+		selectedCable = null;
+		selectedGears = [];
+		updateSelectionUI();
 	};
 	reader.readAsText(event.target.files[0]);
 }
@@ -165,7 +167,6 @@ function applyHistory(step) {
 		});
 		isApplyingHistory = false;
 		mainLayer.draw();
-		cableLayer.draw();
 	}, 150);
 	isOrtho = state.isOrtho;
 }

@@ -1,12 +1,12 @@
 function updateAllCables() {
 	cables.forEach(c => c.redraw());
-	cableLayer.batchDraw();
+	mainLayer.batchDraw();
 }
 
 function createCable(startAnchor, endAnchor, midPoints = [], labelTxt = "", orthoInverse = false) {
 	if (startAnchor.getParent() === endAnchor.getParent()) {
-        return;
-    }
+		return;
+	}
 	const isStartOccupied = cables.some(c => c.fromId === startAnchor.id() || c.toId === startAnchor.id());
 	const isEndOccupied = cables.some(c => c.fromId === endAnchor.id() || c.toId === endAnchor.id());
 
@@ -24,6 +24,9 @@ function createCable(startAnchor, endAnchor, midPoints = [], labelTxt = "", orth
 	const family = startAnchor.family;
 	const color = CABLE_FAMILIES[family].color;
 
+	const gearGroup = startAnchor.getParent();
+	const categoryGroup = gearGroup.getParent();
+
 	const line = new Konva.Line({
 		stroke: color,
 		strokeWidth: 40,
@@ -36,7 +39,7 @@ function createCable(startAnchor, endAnchor, midPoints = [], labelTxt = "", orth
 
 	if (labelTxt) {
 		cableObj.label = new Konva.Text({ text: labelTxt, fontSize: 110, fill: 'white', fontStyle: 'italic' });
-		cableLayer.add(cableObj.label);
+		categoryGroup.add(cableObj.label);
 	}
 
 	function redraw() { cableRedraw(cableObj, line, isOrtho); }
@@ -55,7 +58,7 @@ function createCable(startAnchor, endAnchor, midPoints = [], labelTxt = "", orth
 
 	midPoints.forEach(p => addHandleToCable(cableObj, handlesGroup, p.x, p.y, redraw, true));
 
-	cableLayer.add(line);
+	categoryGroup.add(line);
 	tempLayer.add(handlesGroup);
 	cableObj.redraw = redraw;
 	cableObj.handlesGroup = handlesGroup;

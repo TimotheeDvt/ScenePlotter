@@ -206,7 +206,7 @@ window.addEventListener('mouseup', (e) => {
 		updateSelectionUI();
 
 		tempLayer.draw();
-		cableLayer.draw();
+		mainLayer.draw();
 	}
 	if (activeAnchor) {
 		const pos = stage.getRelativePointerPosition();
@@ -242,7 +242,7 @@ window.addEventListener('keydown', (e) => {
 		});
 
 		updateSelectionUI();
-		cableLayer.batchDraw();
+		mainLayer.batchDraw();
 	}
 	if (e.ctrlKey && e.key === 'z') { if (historyStep > 0) applyHistory(--historyStep); }
 	if (e.ctrlKey && e.key === 'y') { if (historyStep < history.length - 1) applyHistory(++historyStep); }

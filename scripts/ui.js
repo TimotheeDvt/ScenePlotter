@@ -83,7 +83,7 @@ function selectCable(cableObj) {
 		}
 	});
 
-	cableLayer.batchDraw();
+	mainLayer.batchDraw();
 	updateSelectionUI();
 }
 
@@ -153,7 +153,6 @@ function deselectAll() {
 	document.getElementById('selection-actions').style.display = 'none';
 	document.getElementById('prop-title').innerText = "Stage properties";
 	mainLayer.batchDraw();
-	cableLayer.batchDraw();
 	tempLayer.batchDraw();
 	showAllAnchors(false);
 }
@@ -162,35 +161,56 @@ function deselectAll() {
 function executeDelete() {
 	if (selectedGears.length > 0) {
 		selectedGears.forEach(gear => {
+			// if gear is a note
+			if (gear.hasName('free-text')) {
+				gear.destroy();
+				return;
+			}
+
+			const gearAnchors = gear.find('.anchor');
+			const anchorIds = gearAnchors.map(a => a.id());
+
 			cables = cables.filter(c => {
-				if (c.fromId.startsWith(gear.id()) || c.toId.startsWith(gear.id())) {
-					const otherId = c.fromId.startsWith(gear.id()) ? c.toId : c.fromId;
-					resetAnchorAfterDelete(otherId);
-					c.line.destroy(); c.handlesGroup.destroy(); if (c.label) c.label.destroy();
+				if (anchorIds.includes(c.fromId) || anchorIds.includes(c.toId)) {
+					if (c.line) c.line.destroy();
+					if (c.label) c.label.destroy();
+					if (c.handlesGroup) c.handlesGroup.destroy();
+
+					const otherAnchorId = anchorIds.includes(c.fromId) ? c.toId : c.fromId;
+					resetAnchorAfterDelete(otherAnchorId);
+
 					return false;
 				}
 				return true;
 			});
-			const layer = gear.getLayer();
+
+			const targetLayer = gear.getLayer();
 			gear.destroy();
-			if (layer) layer.batchDraw();
+
+			if (targetLayer) targetLayer.batchDraw();
 		});
-	} else if (selectedCable) {
+
+		selectedGears = [];
+		tr.nodes([]);
+	}
+
+	if (selectedCable) {
+		if (selectedCable.line) selectedCable.line.destroy();
+		if (selectedCable.label) selectedCable.label.destroy();
+		if (selectedCable.handlesGroup) selectedCable.handlesGroup.destroy();
+
 		resetAnchorAfterDelete(selectedCable.fromId);
 		resetAnchorAfterDelete(selectedCable.toId);
-		const sn = stage.findOne('#' + selectedCable.fromId);
-		const en = stage.findOne('#' + selectedCable.toId);
-		selectedCable.line.destroy(); selectedCable.handlesGroup.destroy(); if (selectedCable.label) selectedCable.label.destroy();
+
 		cables = cables.filter(c => c !== selectedCable);
-	} else {
-		const selectedNodes = tr.nodes();
-		selectedNodes.forEach(node => {
-			if (node.hasName('free-text')) {
-				node.destroy();
-			}
-		});
+		selectedCable = null;
 	}
-	deselectAll(); saveHistory();
+
+	mainLayer.batchDraw();
+	tempLayer.batchDraw();
+
+	updateSelectionUI();
+	saveHistory();
 }
 
 function copyGears() {
@@ -305,7 +325,7 @@ document.getElementById('cable-label').oninput = (e) => {
 	if (!selectedCable) return;
 	if (!selectedCable.label) {
 		selectedCable.label = new Konva.Text({ fontSize: 11, fill: 'white', fontStyle: 'italic' });
-		cableLayer.add(selectedCable.label);
+		mainLayer.add(selectedCable.label);
 	}
 	selectedCable.label.text(e.target.value); selectedCable.redraw();
 };
@@ -330,7 +350,7 @@ document.getElementById('cable-color-picker').oninput = (e) => {
 		}
 	});
 
-	cableLayer.draw();
+	mainLayer.draw();
 	const targetGroup = categoryGroups[startAnchor.getLayer().name()];
 	if (targetGroup) {
 		mainLayer.batchDraw();
@@ -424,7 +444,6 @@ function changeCableColor(family) {
 			a.fill(newColor);
 		}
 	});
-	cableLayer.batchDraw();
 	mainLayer.batchDraw();
 
 	saveHistory();
@@ -723,14 +742,5 @@ function toggleCategoryGroup(category, isVisible) {
 	const group = categoryGroups[category];
 	group.visible(isVisible);
 
-	cables.forEach(c => {
-		const startNode = stage.findOne('#' + c.fromId);
-		if (startNode && startNode.getParent() === group) {
-			c.line.visible(isVisible);
-			if (c.label) c.label.visible(isVisible);
-		}
-	});
-
 	mainLayer.batchDraw();
-	cableLayer.batchDraw();
 }

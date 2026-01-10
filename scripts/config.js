@@ -43,10 +43,9 @@ const stage = new Konva.Stage({
 const categoryGroups = {};
 const gridLayer = new Konva.Layer();
 const mainLayer = new Konva.Layer();
-const cableLayer = new Konva.Layer();
 const tempLayer = new Konva.Layer();
 
-stage.add(gridLayer, mainLayer, cableLayer, tempLayer);
+stage.add(gridLayer, mainLayer, tempLayer);
 
 // Shared Transformer
 const tr = new Konva.Transformer({

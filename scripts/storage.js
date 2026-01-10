@@ -3,7 +3,7 @@ function saveStage() {
 		name: document.getElementById('projName').value,
 		gear: mainLayer.getChildren().filter(c => c.hasName('gear')).map(g => ({
 			id: g.id(), x: g.x(), y: g.y(), label: g.findOne('Text').text(),
-			src: g.findOne('.icon').image().src.split("/svgs/")[1] || g.findOne('.icon').image().src,
+			src: g.findOne('.icon').image().src.split("/assets/")[1] || g.findOne('.icon').image().src,
 			anchors: g.find('.anchor').map(a => ({ x: a.x(), y: a.y(), color: a.fill(), id: a.id() })),
 			width: g.findOne('.icon').width(), height: g.findOne('.icon').height(),
 			connections: g.connections
@@ -36,7 +36,7 @@ function loadStage(event) {
 			data.notes.forEach(n => addNewNote(n.text, n.x, n.y));
 		}
 		document.getElementById('orthoToggle').checked = isOrtho;
-		data.gear.forEach(g => addEquipment("svgs/" + g.src, g.x, g.y, g.id, g.label, g.connections || {}, g.anchors, g.width, g.height));
+		data.gear.forEach(g => addEquipment("assets/" + g.src, g.x, g.y, g.id, g.label, g.connections || {}, g.anchors, g.width, g.height));
 		setTimeout(() => {
 			data.cables.forEach(c => {
 				const sn = stage.findOne('#' + c.fromId); const en = stage.findOne('#' + c.toId);

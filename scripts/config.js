@@ -15,6 +15,7 @@ let helpToggleLock = false;
 let measurementLine = null;
 let measurementText = null;
 let isMeasuring = false;
+let allCablesVisible = true;
 
 // Constants
 let PX_PER_CM = 15;

@@ -722,7 +722,7 @@ updateHistoryUI();
 function refreshGroupToggles() {
 	const container = document.getElementById('groups-toggles-container');
 	if (!container) return;
-	container.innerHTML = '';
+	container.innerHTML = '<div class="toggle-container"> <label style="margin:0; font-size: 10px;">Cables</label> <label class="switch"> <input type="checkbox" checked="" onchange="toggleAllCablesVisibility()"> <span class="slider"></span> </label> </div>';
 
 	Object.keys(categoryGroups).forEach(cat => {
 		const div = document.createElement('div');

@@ -25,13 +25,13 @@ function createCable(startAnchor, endAnchor, midPoints = [], labelTxt = "", orth
 	const color = CABLE_FAMILIES[family].color;
 
 	const catGroupStart = startAnchor.getParent().getParent();
-    const catGroupEnd = endAnchor.getParent().getParent();
+	const catGroupEnd = endAnchor.getParent().getParent();
 
 	let targetCategoryGroup = catGroupStart;
 
 	if (catGroupEnd.name() === "Instruments" || catGroupStart.name() === "Instruments") {
-        targetCategoryGroup = categoryGroups["Instruments"];
-    } else {
+		targetCategoryGroup = categoryGroups["Instruments"];
+	} else {
 		targetCategoryGroup = catGroupStart;
 	}
 
@@ -184,4 +184,18 @@ function calculateCableLength(cableObj) {
 	}
 
 	return (totalLength / PX_PER_CM).toFixed(2);
+}
+
+function toggleAllCablesVisibility() {
+	allCablesVisible = !allCablesVisible;
+	cables.forEach(c => {
+		if (c.line) c.line.visible(allCablesVisible);
+		if (c.label) c.label.visible(allCablesVisible);
+		if (!allCablesVisible && c.handlesGroup) {
+			c.handlesGroup.visible(false);
+		}
+	});
+
+	mainLayer.batchDraw();
+	tempLayer.batchDraw();
 }

@@ -188,6 +188,9 @@ function addEventListenersAnchor(c, img, group) {
 			c.y(dy > 0 ? h : 0);
 			c.x(Math.max(0, Math.min(w, cx)));
 		}
+
+		const newRotation = calculateAnchorRotation(c.x(), c.y(), w, h, c.iotype);
+        c.rotation(newRotation);
 		updateAllCables();
 	});
 

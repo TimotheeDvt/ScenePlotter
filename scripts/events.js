@@ -187,6 +187,11 @@ window.addEventListener('mouseup', (e) => {
 	}
 	if (selectionRect.visible()) {
 		selectionRect.visible(false);
+
+		if (selectionRect.width() < 2 && selectionRect.height() < 2) {
+            tempLayer.draw();
+            return;
+        }
 		const box = selectionRect.getClientRect();
 
 		const gears = stage.find('.gear');

@@ -43,7 +43,7 @@ function createCable(startAnchor, endAnchor, midPoints = [], labelTxt = "", orth
 		hitStrokeWidth: 200
 	});
 	const handlesGroup = new Konva.Group({ visible: false });
-	const cableObj = { line, fromId: startAnchor.id(), toId: endAnchor.id(), handles: [], isSelected: false, label: null, orthoInverse };
+	const cableObj = { line, fromId: startAnchor.id(), toId: endAnchor.id(), handles: [], isSelected: false, label: null, orthoInverse, family };
 
 	// if (labelTxt) {
 	// 	cableObj.label = new Konva.Text({ text: labelTxt, fontSize: 110, fill: 'white', fontStyle: 'italic' });
@@ -62,7 +62,7 @@ function createCable(startAnchor, endAnchor, midPoints = [], labelTxt = "", orth
 		addHandleToCable(cableObj, handlesGroup, p.x, p.y, redraw);
 	});
 
-	line.on('click', (e) => { e.cancelBubble = true; selectCable(cableObj); });
+	line.on('click', (e) => { e.cancelBubble = true; selectCable(cableObj); redraw(); });
 
 	midPoints.forEach(p => addHandleToCable(cableObj, handlesGroup, p.x, p.y, redraw, true));
 
@@ -155,6 +155,7 @@ function cableRedraw(cableObj, line, isOrtho) {
 	// }
 
 	if (selectedCable === cableObj) {
+		updateSelectionUI()
 		const lengthInput = document.getElementById('cable-length');
 		if (lengthInput) {
 			const length = calculateCableLength(cableObj);

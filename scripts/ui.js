@@ -119,6 +119,8 @@ function updateSelectionUI() {
 				document.getElementById('note-size-input').value = note.fontSize();
 			}
 		} else if (cables.filter(c => c.isSelected).length === 1 && selectedGears.length === 0) {
+			cableProps.style.display = 'block';
+			document.getElementById('cable-color-picker').value = CABLE_FAMILIES[selectedCable.family].color;
 			const selCable = cables.find(c => c.isSelected);
 			selectCable(selCable);
 		} else {
@@ -331,14 +333,14 @@ document.getElementById('prop-size-cm').oninput = (e) => {
 		updateIO();
 	}
 };
-document.getElementById('cable-label').oninput = (e) => {
-	if (!selectedCable) return;
-	if (!selectedCable.label) {
-		selectedCable.label = new Konva.Text({ fontSize: 11, fill: 'white', fontStyle: 'italic' });
-		mainLayer.add(selectedCable.label);
-	}
-	selectedCable.label.text(e.target.value); selectedCable.redraw();
-};
+// document.getElementById('cable-label').oninput = (e) => {
+// 	if (!selectedCable) return;
+// 	if (!selectedCable.label) {
+// 		selectedCable.label = new Konva.Text({ fontSize: 11, fill: 'white', fontStyle: 'italic' });
+// 		mainLayer.add(selectedCable.label);
+// 	}
+// 	selectedCable.label.text(e.target.value); selectedCable.redraw();
+// };
 document.getElementById('cable-color-picker').oninput = (e) => {
 	if (!selectedCable) return;
 	const newColor = e.target.value;

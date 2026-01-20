@@ -1,4 +1,4 @@
-function addEquipment(src, x = 100, y = 100, id = null, labelText = "", connections = {}, anchorData = null, width = null, height = null, rotation = 0, path = null) {
+function addEquipment(src, x = 100, y = 100, id = null, labelText = "", connections = {}, anchorData = null, width = null, height = null, rotation = 0, path = null, assetName = "") {
 	const nativeImg = new Image();
 	nativeImg.onload = () => {
 		const group = new Konva.Group({
@@ -6,9 +6,11 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", connecti
 		});
 
 		group.connections = connections;
+		group.assetName = assetName;
+		group.path = path;
 
-		const preset = SVG_LIBRARY.find(item => item.path === path);
-		const category = preset ? (preset.category || "Notes") : "Notes";
+		const preset = SVG_LIBRARY.find(item => item.name === assetName);
+        const category = preset ? (preset.category || "Notes") : "Notes";
 		const targetGroup = categoryGroups[category] || categoryGroups["Notes"];
 
 		addUI(group, nativeImg, labelText, width, height);

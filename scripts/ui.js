@@ -227,7 +227,10 @@ function copyGears() {
 			color: a.fill(),
 			family: a.family,
 			iotype: a.iotype
-		}))
+		})),
+		rotation: gear.rotation(),
+		path: gear.path,
+		assetName: gear.assetName
 	}));
 }
 
@@ -249,7 +252,10 @@ function pasteGears() {
 			c.connections,
 			c.anchors,
 			c.width,
-			c.height
+			c.height,
+			c.rotation,
+			c.path,
+			c.assetName
 		);
 	});
 }
@@ -512,7 +518,8 @@ if (typeof SVG_LIBRARY !== 'undefined') {
 					(f.width ?? 80) * PX_PER_CM,
 					(f.height ?? 80) * PX_PER_CM,
 					0,
-					f.path
+					f.path,
+					f.name
 				)
 			};
 			grid.appendChild(item);
@@ -733,23 +740,32 @@ updateHistoryUI();
 function refreshGroupToggles() {
 	const container = document.getElementById('groups-toggles-container');
 	if (!container) return;
-	container.innerHTML = `
-	<div class="toggle-container not-hidden" id="toggle-cables">
-		<label style="margin:0; font-size: 10px;">Cables</label>
-		<label class="switch">
-			<input class="category-display-toggle" type="checkbox" checked="" onchange="toggleCategoryGroup('Cables', this.checked)">
-			<span class="slider"></span>
-		</label>
-	</div>`;
 
+	// On vide pour éviter les doublons au rafraîchissement
+	container.innerHTML = '';
+
+	// Toggle spécial pour les câbles
+	const cableDiv = document.createElement('div');
+	cableDiv.className = 'toggle-container not-hidden';
+	cableDiv.id = 'toggle-cables';
+	cableDiv.innerHTML = `
+        <label style="margin:0; font-size: 10px;">Cables</label>
+        <label class="switch">
+            <input type="checkbox" checked onchange="toggleCategoryGroup('Cables', this.checked)">
+            <span class="slider"></span>
+        </label>`;
+	container.appendChild(cableDiv);
+
+	// Toggles pour chaque groupe Konva existant
 	Object.keys(categoryGroups).forEach(cat => {
 		const div = document.createElement('div');
 		div.className = 'toggle-container not-hidden';
-		div.id = `toggle-${cat.toLowerCase()}`;
+		// Utilisation d'un ID cohérent pour le CSS
+		div.id = `toggle-${cat.replace(/\s+/g, '-').toLowerCase()}`;
 		div.innerHTML = `
             <label style="margin:0; font-size: 10px;">${cat}</label>
             <label class="switch">
-                <input class="category-display-toggle" type="checkbox" checked onchange="toggleCategoryGroup('${cat}', this.checked)">
+                <input type="checkbox" checked onchange="toggleCategoryGroup('${cat}', this.checked)">
                 <span class="slider"></span>
             </label>
         `;
@@ -760,22 +776,21 @@ function refreshGroupToggles() {
 function toggleCategoryGroup(category, isVisible) {
 	if (category === 'Cables') {
 		toggleAllCablesVisibility(isVisible);
-		const relatedDiv = document.getElementById(`toggle-${category.toLowerCase()}`);
-		if (relatedDiv) {
-			relatedDiv.classList.toggle('hidden', !isVisible);
-			relatedDiv.classList.toggle('not-hidden', isVisible);
-		}
+		const div = document.getElementById('toggle-cables');
+		if (div) div.classList.toggle('hidden', !isVisible);
 		return;
 	}
 
 	const group = categoryGroups[category];
-	group.visible(isVisible);
-
-	const relatedDiv = document.getElementById(`toggle-${category.toLowerCase()}`);
-	if (relatedDiv) {
-		relatedDiv.classList.toggle('hidden', !isVisible);
-		relatedDiv.classList.toggle('not-hidden', isVisible);
+	if (group) {
+		group.visible(isVisible);
+		// On reconstruit l'ID comme dans refreshGroupToggles
+		const divId = `toggle-${category.replace(/\s+/g, '-').toLowerCase()}`;
+		const relatedDiv = document.getElementById(divId);
+		if (relatedDiv) {
+			relatedDiv.classList.toggle('hidden', !isVisible);
+			relatedDiv.classList.toggle('not-hidden', isVisible);
+		}
+		mainLayer.batchDraw();
 	}
-
-	mainLayer.batchDraw();
 }

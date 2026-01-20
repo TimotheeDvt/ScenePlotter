@@ -13,7 +13,8 @@ function saveStage() {
 			width: g.findOne('.icon').width(),
 			height: g.findOne('.icon').height(),
 			connections: g.connections,
-			rotation: g.rotation()
+			rotation: g.rotation(),
+			name: g.assetName
 		}));
 
 		const notes = group.getChildren().filter(c => c.hasName('free-text')).map(n => ({
@@ -70,7 +71,7 @@ function loadStage(event) {
 		if (data.notes) {
 			data.notes.forEach(n => addNewNote(n.text, n.x, n.y, n.color, n.fontSize));
 		}
-		data.gear.forEach(g => addEquipment("" + g.src, g.x, g.y, g.id, g.label, g.connections || {}, g.anchors, g.width, g.height, g.rotation));
+		data.gear.forEach(g => addEquipment("" + g.src, g.x, g.y, g.id, g.label, g.connections || {}, g.anchors, g.width, g.height, g.rotation, g.path, g.name));
 		setTimeout(() => {
 			data.cables.forEach(c => {
 				const sn = stage.findOne('#' + c.fromId);
@@ -104,7 +105,8 @@ function saveHistory() {
 			width: g.findOne('.icon').width(),
 			height: g.findOne('.icon').height(),
 			connections: g.connections,
-			rotation: g.rotation()
+			rotation: g.rotation(),
+			name: g.assetName
 		}));
 
 		const notesInGroup = group.getChildren().filter(c => c.hasName('free-text')).map(n => ({
@@ -155,7 +157,7 @@ function applyHistory(step) {
 		if (c.label) c.label.destroy();
 	});
 	cables = [];
-	state.gear.forEach(g => addEquipment(g.src, g.x, g.y, g.id, g.label, g.connections || {}, g.anchors, g.width, g.height, g.rotation));
+	state.gear.forEach(g => addEquipment(g.src, g.x, g.y, g.id, g.label, g.connections || {}, g.anchors, g.width, g.height, g.rotation, g.path, g.name));
 	if (state.notes) {
 		state.notes.forEach(n => addNewNote(n.text, n.x, n.y, n.color, n.fontSize));
 	}

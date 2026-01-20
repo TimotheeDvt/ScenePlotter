@@ -13,10 +13,12 @@ body {
 #sidebar-left,
 #sidebar-right {
   width: 280px;
-  min-width: 280px;
-  background: #252526;
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  border-left: 1px solid #333;
+  padding: 15px;
+  box-sizing: border-box;
 }
 
 /* LEFT SIDEBAR (Library & Categories) */
@@ -314,4 +316,22 @@ input:checked+.slider:before {
 
 .history-swatch:hover {
   transform: scale(1.2);
+}
+
+#canvas-props {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+#groups-toggles-container {
+  flex-grow: 1;
+  min-height: 100px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #444 #252526;
+  scrollbar-gutter: stable;
+  background: #1e1e1e;
+  border-radius: 5px;
 }

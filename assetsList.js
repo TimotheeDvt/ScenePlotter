@@ -198,3 +198,11 @@ const SVG_LIBRARY = [
 		}
 	}
 ];
+
+const CABLE_FAMILIES = {
+	xlr: { label: "XLR", color: "#0000FF", types: ["in", "out"] },
+	jack: { label: "Jack", color: "#000000", types: ["in", "out"] },
+	elec: { label: "Electricity", color: "#FFFFFF", types: ["in", "out"] },
+	aes: { label: "AES", color: "#FF0000", types: ["in", "out"] },
+	dmx: { label: "DMX", color: "#800080", types: ["in", "out"] }
+};

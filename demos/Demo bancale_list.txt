@@ -1,0 +1,39 @@
+STAGE LIST: Demo bancale
+--- GEARS ---
+[INSTRUMENTS]
+ - AGuitar
+ - Batterie (Drums)
+ - Piano
+
+[MICROPHONES]
+ - SM58 (x2)
+
+[AUDIO]
+ - D.I. (x2)
+ - DBR10 (x2)
+ - DL32
+ - M32R
+
+[ELECTRICITY]
+ - Power Strip
+ - Power outlet (x2)
+
+--- CABLE LIST ---
+[AES]
+ - 8m
+
+[ELEC]
+ - 2m
+ - 3m
+ - 6m (x2)
+ - 16m (x2)
+
+[JACK]
+ - 6m
+ - 9m
+
+[XLR]
+ - 6m
+ - 25m (x5)
+ - 32m (x4)
+

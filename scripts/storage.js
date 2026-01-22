@@ -221,3 +221,83 @@ function exportScene(format) {
 		pdf.save(document.getElementById('projName').value + '.pdf');
 	}
 }
+
+function exportGearList() {
+	let content = `STAGE LIST: ${document.getElementById('projName').value}\n`;
+
+	// --- 1. GEAR LIST SORTED BY CATEGORY ---
+	content += "--- GEARS ---\n";
+	const gearByCat = {};
+
+	Object.keys(categoryGroups).forEach(cat => {
+		const gears = categoryGroups[cat].find('.gear');
+		if (gears.length > 0) {
+			// Group items within this category to count quantities
+			const counts = {};
+			gears.forEach(g => {
+				const name = g.findOne('Text').text() || '';
+				const asset = g.assetName || "Generic";
+				// Create a unique key combining name and asset
+				const key = name !== '' ? `${name} (${asset})` : asset;
+				counts[key] = (counts[key] || 0) + 1;
+			});
+			gearByCat[cat] = counts;
+		}
+	});
+
+	for (const [cat, items] of Object.entries(gearByCat)) {
+		content += `[${cat.toUpperCase()}]\n`;
+		// Sort the unique keys alphabetically
+		Object.keys(items).sort().forEach(itemKey => {
+			const quantity = items[itemKey];
+			const quantityStr = quantity > 1 ? ` (x${quantity})` : '';
+			content += ` - ${itemKey}${quantityStr}\n`;
+		});
+		content += "\n";
+	}
+
+	// --- 2. CABLE LIST SORTED BY TYPE AND LENGTH ---
+	content += "--- CABLE LIST ---\n";
+
+	const groupedCables = {};
+
+	cables.forEach(c => {
+		const familyConfig = CABLE_FAMILIES[c.family];
+		const actualLengthCm = (c.length || calculateCableLength(c)) / PX_PER_CM;
+		let finalLength = actualLengthCm;
+		if (familyConfig && familyConfig.lengths) {
+			const sortedAvailable = [...familyConfig.lengths].sort((a, b) => a - b);
+			const upperLength = sortedAvailable.find(l => l >= actualLengthCm);
+			if (upperLength !== undefined) {
+				finalLength = upperLength;
+			} else {
+				finalLength = Math.ceil(actualLengthCm);
+			}
+		}
+
+		const label = `${finalLength}${typeof finalLength === 'number' ? 'm' : 'cm'}`;
+
+		if (!groupedCables[c.family]) groupedCables[c.family] = {};
+		groupedCables[c.family][label] = (groupedCables[c.family][label] || 0) + 1;
+	});
+
+	Object.keys(groupedCables).sort().forEach(family => {
+		content += `[${family.toUpperCase()}]\n`;
+
+		const lengths = groupedCables[family];
+		Object.keys(lengths).sort((a, b) => parseFloat(a) - parseFloat(b)).forEach(lenLabel => {
+			const count = lengths[lenLabel];
+			const countStr = count > 1 ? ` (x${count})` : '';
+			content += ` - ${lenLabel}${countStr}\n`;
+		});
+		content += "\n";
+	});
+
+	const blob = new Blob([content], { type: 'text/plain' });
+	const url = URL.createObjectURL(blob);
+	const link = document.createElement('a');
+	link.href = url;
+	link.download = `${document.getElementById('projName').value}_list.txt`;
+	link.click();
+	URL.revokeObjectURL(url);
+}

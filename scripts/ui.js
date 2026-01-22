@@ -779,20 +779,51 @@ function toggleCategoryGroup(category, isVisible) {
 	if (category === 'Cables') {
 		toggleAllCablesVisibility(isVisible);
 		const div = document.getElementById('toggle-cables');
-		if (div) div.classList.toggle('hidden', !isVisible);
-		return;
+		if (div) {
+			div.classList.toggle('hidden', !isVisible);
+			div.classList.toggle('not-hidden', isVisible);
+		}
+	} else {
+		const group = categoryGroups[category];
+		if (group) {
+			group.visible(isVisible);
+			// On reconstruit l'ID comme dans refreshGroupToggles
+			const divId = `toggle-${category.replace(/\s+/g, '-').toLowerCase()}`;
+			const relatedDiv = document.getElementById(divId);
+			if (relatedDiv) {
+				relatedDiv.classList.toggle('hidden', !isVisible);
+				relatedDiv.classList.toggle('not-hidden', isVisible);
+			}
+			mainLayer.batchDraw();
+		}
 	}
 
-	const group = categoryGroups[category];
-	if (group) {
-		group.visible(isVisible);
-		// On reconstruit l'ID comme dans refreshGroupToggles
-		const divId = `toggle-${category.replace(/\s+/g, '-').toLowerCase()}`;
-		const relatedDiv = document.getElementById(divId);
-		if (relatedDiv) {
-			relatedDiv.classList.toggle('hidden', !isVisible);
-			relatedDiv.classList.toggle('not-hidden', isVisible);
-		}
-		mainLayer.batchDraw();
-	}
+	const allCheckboxes = Array.from(document.querySelectorAll('#groups-toggles-container input[type="checkbox"]'));
+    const masterToggle = document.getElementById('toggle-all-groups');
+    if (masterToggle) {
+        const anyChecked = allCheckboxes.some(cb => cb.checked);
+        const allChecked = allCheckboxes.every(cb => cb.checked);
+
+        // If all are checked, master is checked. If all are unchecked, master is unchecked.
+        if (allChecked) masterToggle.checked = true;
+        if (!anyChecked) masterToggle.checked = false;
+    }
+}
+
+function toggleAllGroups(isVisible) {
+    const cableToggle = document.querySelector('#toggle-cables input[type="checkbox"]');
+    if (cableToggle && cableToggle.checked !== isVisible) {
+        cableToggle.checked = isVisible;
+        toggleCategoryGroup('Cables', isVisible);
+    }
+
+    Object.keys(categoryGroups).forEach(cat => {
+        const divId = `toggle-${cat.replace(/\s+/g, '-').toLowerCase()}`;
+        const checkbox = document.querySelector(`#${divId} input[type="checkbox"]`);
+
+        if (checkbox && checkbox.checked !== isVisible) {
+            checkbox.checked = isVisible;
+            toggleCategoryGroup(cat, isVisible);
+        }
+    });
 }

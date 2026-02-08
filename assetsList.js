@@ -196,7 +196,69 @@ const SVG_LIBRARY = [
 		"connections": {
 			"elec": { "in": 0, "out": 1 }
 		}
-	}
+	},
+	// Lights
+	{
+		"name": "LED Bar",
+		"path": "led_bar",
+		"category": "Lights",
+		"width": 100,
+		"height": 15,
+		"connections": {
+			"dmx": { "in": 1, "out": 1 },
+			"elec": { "in": 1, "out": 1 }
+		},
+		"fixedAnchors": [
+			{ family: "dmx", type: "in", x: 0, y: 7 },
+			{ family: "dmx", type: "out", x: 100, y: 7 },
+			{ family: "elec", type: "in", x: 0, y: 0 },
+			{ family: "elec", type: "out", x: 100, y: 0 }
+		]
+	},
+	{
+		"name": "Led Spot",
+		"path": "led_spot",
+		"category": "Lights",
+		"width": 25,
+		"height": 28,
+		"connections": {
+			"dmx": { "in": 1, "out": 1 },
+			"elec": { "in": 1, "out": 1 }
+		},
+		"fixedAnchors": [
+			{ family: "dmx", type: "in", x: 0, y: 12.5 },
+			{ family: "dmx", type: "out", x: 25, y: 12.5 },
+			{ family: "elec", type: "in", x: 0, y: 0 },
+			{ family: "elec", type: "out", x: 25, y: 0 }
+		]
+	},
+	{
+		"name": "DMX/USB Interface",
+		"path": "dmx_usb_interface",
+		"category": "Lights",
+		"width": 6,
+		"height": 8,
+		"connections": {
+			"dmx": { "in": 1, "out": 1 }
+		},
+		"fixedAnchors": [
+			{ family: "dmx", type: "in", x: 6, y: 4 },
+			{ family: "dmx", type: "out", x: 0, y: 4 }
+		]
+	},
+	{
+		"name": "DMX Terminator",
+		"path": "dmx_terminator",
+		"category": "Lights",
+		"width": 10,
+		"height": 3,
+		"connections": {
+			"dmx": { "in": 1, "out": 0 }
+		},
+		"fixedAnchors": [
+			{ family: "dmx", type: "in", x: 10, y: 1.5 }
+		]
+	},
 ];
 
 const CABLE_FAMILIES = {

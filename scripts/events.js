@@ -247,6 +247,7 @@ window.addEventListener('mouseup', (e) => {
 // Shortcuts
 window.addEventListener('keydown', (e) => {
 	if (e.key === 'Delete' || e.key === 'Backspace') {
+		e.preventDefault();
 		const activeEl = document.activeElement;
 		const isTyping = activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA';
 		if (isTyping) return;

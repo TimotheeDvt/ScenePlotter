@@ -265,20 +265,25 @@ input:checked+.slider:before {
 /* Modals */
 #help-modal {
   position: fixed;
-  top: calc(50% - 300px);
+  top: 100px;
   left: calc(50% - 200px);
   width: 400px;
-  height: fit-content;
+  height: 600px;
   background-color: #333;
   color: white;
   padding: 20px;
   border-radius: 5px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   display: flex;
+  overflow-y: scroll;
 }
 
 #help-modal.hidden {
   display: none;
+}
+
+#help-content {
+  padding: 5px;
 }
 
 #cable-color {

@@ -169,14 +169,35 @@ stage.on('mousemove touchmove', (e) => {
 			? CABLE_FAMILIES[activeAnchor.family].color
 			: '#ffffff';
 
-		dragLine.points([start.x, start.y, pos.x, pos.y]);
+		const dx = pos.x - start.x;
+		const dy = pos.y - start.y;
+		if (isOrtho) {
+			dragLine.points([start.x, start.y, start.x + dx, start.y, start.x + dx, start.y + dy, start.x + dx, start.y + dy]);
+		} else {
+			dragLine.points([start.x, start.y, pos.x, pos.y]);
+		}
 		dragLine.stroke(familyColor);
 		dragLine.visible(true);
+
+		let distancePx;
+		if (isOrtho) {
+			distancePx = Math.abs(dx) + Math.abs(dy);
+		} else {
+			distancePx = Math.sqrt(dx * dx + dy * dy);
+		}
+		const distanceCm = (distancePx / PX_PER_CM);
+		const length = distanceCm >= 100
+			? `${Math.floor(distanceCm / 100)} m ${Math.round(distanceCm % 100)} cm`
+			: `${Math.round(distanceCm)} cm`;
+		measurementText.text(length);
+		measurementText.position({ x: pos.x + 100, y: pos.y - 150 });
+		measurementText.visible(true);
 		tempLayer.batchDraw();
 	}
 });
 
 window.addEventListener('mouseup', (e) => {
+	measurementText.visible(false);
 	if (isMeasuring) {
 		isMeasuring = false;
 		measurementStartCircle.visible(false);
@@ -256,6 +277,7 @@ window.addEventListener('keydown', (e) => {
 	if (e.ctrlKey && e.key === 'c') copyGears();
 	if (e.ctrlKey && e.key === 'v') pasteGears();
 	if (e.ctrlKey && e.key === 'x') cutGears();
+	if (e.ctrlKey && e.key === 'o') { e.preventDefault(); document.getElementById('orthoToggle').click(); }
 	if (e.ctrlKey && e.key === 'e') { e.preventDefault(); centerStage(); stage.batchDraw(); }
 	if (e.ctrlKey && e.key === 'a') {
 		e.preventDefault();

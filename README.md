@@ -36,6 +36,7 @@
 | **Ctrl + S** | Save project as `.stage` |
 | **Ctrl + A** | Select all elements |
 | **Ctrl + E** | Center the stage view |
+| **Ctrl + O** | Toggle orthogonal/direct routing mode|
 | **Delete** | Remove selected element or cable |
 | **Escape** | Deselect all |
 | **Shift + Click** | Measure distance between two points |

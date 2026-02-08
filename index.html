@@ -92,14 +92,14 @@
             <label>Grid cell size (cm)</label>
             <input type="number" id="prop-grid-size" value="20" min="1" max="100" step="1">
 
-            <div style="display: flex; justify-content: space-evenly; align-items: center; margin-bottom: 5px;">
+            <div style="display: flex; justify-content: space-evenly; align-items: center;">
                 <label style="margin-bottom: 0;">Toggle groups display</label>
                 <label class="switch" style="transform: scale(0.8);">
                     <input type="checkbox" id="toggle-all-groups" checked onchange="toggleAllGroups(this.checked)">
                     <span class="slider"></span>
                 </label>
             </div>
-            <div id="groups-toggles-container" class="panel" style="background: #1e1e1e; border-radius: 5px;"> </div>
+            <div id="groups-toggles-container" class="panel" style="background: #1e1e1e;"> </div>
             <button style="background:#555; margin-top:10px" onclick="centerStage()">Center stage</button>
             <button style="background:#27ae60" onclick="exportScene('png')">Export to PNG</button>
             <button style="background:#8e44ad" onclick="exportGearList()">Export Gear List (.txt)</button>

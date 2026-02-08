@@ -310,7 +310,6 @@ input:checked+.slider:before {
 
 #groups-toggles-container {
   flex-grow: 1;
-  max-height: 20%;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: #444 #252526;

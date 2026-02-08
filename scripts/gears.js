@@ -16,13 +16,13 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", connecti
 		addUI(group, nativeImg, labelText, width, height);
 
 		if (anchorData && anchorData.length > 0) {
-			anchorData.forEach(ad => createSingleAnchor(group, ad.x, ad.y, ad.family, ad.iotype, ad.id));
+			anchorData.forEach(ad => createSingleAnchor(group, ad.x, ad.y, ad.family, ad.iotype, ad.id, ad.i));
 		} else if (width && height) {
 			if (preset && preset.fixedAnchors) {
 				preset.fixedAnchors.forEach(fa => {
 					const scaleX = width / preset.width;
 					const scaleY = height / preset.height;
-					createSingleAnchor(group, fa.x * scaleX, fa.y * scaleY, fa.family, fa.type);
+					createSingleAnchor(group, fa.x * scaleX, fa.y * scaleY, fa.family, fa.type, null, fa.i);
 				});
 			} else {
 				generateDefaultAnchors(group, connections);
@@ -40,7 +40,7 @@ function addEquipment(src, x = 100, y = 100, id = null, labelText = "", connecti
 	nativeImg.src = src;
 }
 
-function createSingleAnchor(group, x, y, family, type, id) {
+function createSingleAnchor(group, x, y, family, type, id, index = 0) {
 	const img = group.findOne('.icon');
 	const color = CABLE_FAMILIES[family] ? CABLE_FAMILIES[family].color : '#888';
 	const rotation = calculateAnchorRotation(x, y, img.width(), img.height(), type);
@@ -84,6 +84,7 @@ function createSingleAnchor(group, x, y, family, type, id) {
 
 	anchorShape.family = family;
 	anchorShape.iotype = type;
+	anchorShape.i = index;
 
 	addEventListenersAnchor(anchorShape, img, group);
 	group.add(anchorShape);
@@ -105,6 +106,24 @@ function createVirtualAnchor(group, x, y) {
 		x, y, radius: 20, fill: '#666', opacity: 0.5,
 		name: 'virtual-anchor', listening: false
 	}));
+}
+
+function updateAnchorsPosition(group) {
+	const preset = SVG_LIBRARY.find(item => item.name === group.assetName);
+	if (!preset || !preset.fixedAnchors) return;
+	for (const anchor of group.find('.anchor')) {
+		const fixedAnchor = preset.fixedAnchors || null;
+		if (fixedAnchor) {
+			const fa = fixedAnchor.find(fa => fa.family === anchor.family && fa.type === anchor.iotype && fa.i === anchor.i);
+			if (fa) {
+				anchor.x(fa.x * (group.findOne('.icon').width() / preset.width));
+				anchor.y(fa.y * (group.findOne('.icon').height() / preset.height));
+
+				const newRotation = calculateAnchorRotation(anchor.x(), anchor.y(), group.findOne('.icon').width(), group.findOne('.icon').height(), anchor.iotype);
+				anchor.rotation(newRotation);
+			}
+		}
+	}
 }
 
 function addUI(group, nativeImg, labelText, width, height) {
@@ -144,6 +163,12 @@ function addEventListenersGroup(group) {
 			y: Math.round(group.y() / SNAP_SIZE) * SNAP_SIZE
 		});
 		updateAllCables();
+	});
+
+	group.on('transformend', () => {
+		updateAnchorsPosition(group);
+		updateAllCables();
+		saveHistory();
 	});
 
 	group.on('dragend', () => saveHistory());
@@ -219,15 +244,24 @@ function generateDefaultAnchors(group, connections) {
 	let totalAnchors = 0;
 	Object.values(connections).forEach(f => totalAnchors += (f.in + f.out));
 
-	let index = 0;
+	const preset = group.assetName ? SVG_LIBRARY.find(item => item.name === group.assetName) : null;
+	const fixedAnchors = preset?.fixedAnchors || [];
+
+	let posIndex = 0;
 	for (const [family, counts] of Object.entries(connections)) {
 		for (let i = 0; i < counts.out; i++) {
-			const pos = getRectPos(index++, totalAnchors, w, h);
-			createSingleAnchor(group, pos.x, pos.y, family, 'out');
+			const fixed = fixedAnchors.find(fa => fa.family === family && fa.type === 'out' && fa.i === i);
+			const x = fixed ? fixed.x * (w / preset.width) : getRectPos(posIndex, totalAnchors, w, h).x;
+			const y = fixed ? fixed.y * (h / preset.height) : getRectPos(posIndex, totalAnchors, w, h).y;
+			createSingleAnchor(group, x, y, family, 'out', null, i);
+			posIndex++;
 		}
 		for (let i = 0; i < counts.in; i++) {
-			const pos = getRectPos(index++, totalAnchors, w, h);
-			createSingleAnchor(group, pos.x, pos.y, family, 'in');
+			const fixed = fixedAnchors.find(fa => fa.family === family && fa.type === 'in' && fa.i === i);
+			const x = fixed ? fixed.x * (w / preset.width) : getRectPos(posIndex, totalAnchors, w, h).x;
+			const y = fixed ? fixed.y * (h / preset.height) : getRectPos(posIndex, totalAnchors, w, h).y;
+			createSingleAnchor(group, x, y, family, 'in', null, i);
+			posIndex++;
 		}
 	}
 }

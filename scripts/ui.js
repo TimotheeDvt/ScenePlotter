@@ -265,44 +265,18 @@ function pasteGears() {
 function cutGears() { copyGears(); executeDelete(); }
 
 function updateIO() {
-	idEquivalents = {};
 	selectedGears.forEach(gear => {
-		const img = gear.findOne('.icon');
-		const w = img.width(), h = img.height();
-		const oldIds = gear.find('.anchor').map(a => a.id());
-		gear.find('.anchor').forEach(a => a.destroy());
-		const src = img.image().src;
-		const preset = SVG_LIBRARY.find(item => src.includes(item.path));
+		const anchors = gear.find('.anchor');
 
-		if (preset && preset.fixedAnchors) {
-			preset.fixedAnchors.forEach(fa => {
-				const scaleX = w / preset.width;
-				const scaleY = h / preset.height;
-				createSingleAnchor(gear, fa.x * scaleX, fa.y * scaleY, fa.family, fa.type);
-			});
+		if (anchors.length > 0) {
+			updateAnchorsPosition(gear);
 		} else {
-			const connections = gear.connections;
-			const total = Object.values(connections).reduce((sum, conn) => sum + (conn.in || 0) + (conn.out || 0), 0);
-			let index = 0;
-			Object.keys(connections).forEach(family => {
-				const conn = connections[family];
-				for (let i = 0; i < (conn.in || 0); i++) {
-					const pos = getRectPos(index, total, w, h);
-					createSingleAnchor(gear, pos.x, pos.y, family, 'in');
-					index++;
-				}
-				for (let i = 0; i < (conn.out || 0); i++) {
-					const pos = getRectPos(index, total, w, h);
-					createSingleAnchor(gear, pos.x, pos.y, family, 'out');
-					index++;
-				}
-			});
+			generateDefaultAnchors(gear, gear.connections);
 		}
-		const newIds = gear.find('.anchor').map(a => a.id());
-		idEquivalents = { ...Object.fromEntries(oldIds.map((id, idx) => [id, newIds[idx]])) };
 	});
 
 	updateAllCables();
+	mainLayer.batchDraw();
 	saveHistory();
 }
 

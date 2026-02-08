@@ -10,14 +10,14 @@ const SVG_LIBRARY = [
 			"xlr": { "in": 0, "out": 8 }
 		},
 		"fixedAnchors": [
-			{ family: "xlr", type: "out", x: 0.5, y: 0 },
-			{ family: "xlr", type: "out", x: 10, y: 0 },
-			{ family: "xlr", type: "out", x: 20, y: 0 },
-			{ family: "xlr", type: "out", x: 30, y: 0 },
-			{ family: "xlr", type: "out", x: 40, y: 0 },
-			{ family: "xlr", type: "out", x: 50, y: 0 },
-			{ family: "xlr", type: "out", x: 60, y: 0 },
-			{ family: "xlr", type: "out", x: 70, y: 0 }
+			{ family: "xlr", type: "out", x: 0.5, y: 0, i:0 },
+			{ family: "xlr", type: "out", x: 10, y: 0, i:1 },
+			{ family: "xlr", type: "out", x: 20, y: 0, i:2 },
+			{ family: "xlr", type: "out", x: 30, y: 0, i:3 },
+			{ family: "xlr", type: "out", x: 40, y: 0, i:4 },
+			{ family: "xlr", type: "out", x: 50, y: 0, i:5 },
+			{ family: "xlr", type: "out", x: 60, y: 0, i:6 },
+			{ family: "xlr", type: "out", x: 70, y: 0, i:7 }
 		]
 	},
 	{
@@ -81,9 +81,9 @@ const SVG_LIBRARY = [
 			"elec": { "in": 1, "out": 0 }
 		},
 		"fixedAnchors": [
-			{ family: "jack", type: "out", x: 40, y: 0 },
-			{ family: "jack", type: "out", x: 45, y: 0 },
-			{ family: "elec", type: "in", x: 50, y: 0 }
+			{ family: "jack", type: "out", x: 40, y: 0, i: 0 },
+			{ family: "jack", type: "out", x: 45, y: 0, i: 1 },
+			{ family: "elec", type: "in", x: 50, y: 0, i: 0 }
 		]
 	},
 	// Microphones
@@ -119,8 +119,8 @@ const SVG_LIBRARY = [
 			"elec" : { "in": 1, "out": 0 }
 		},
 		"fixedAnchors": [
-			{ family: "xlr", type: "in", x: 0, y: 20 },
-			{ family: "elec", type: "in", x: 0, y: 30 }
+			{ family: "xlr", type: "in", x: 0, y: 20, i: 0 },
+			{ family: "elec", type: "in", x: 0, y: 30, i: 0 }
 		]
 	},
 	{
@@ -152,9 +152,9 @@ const SVG_LIBRARY = [
 			"aes" : { "in": 2, "out": 0 }
 		},
 		"fixedAnchors": [
-			{ family: "aes", type: "in", x: 25, y: 0 },
-			{ family: "aes", type: "out", x: 30, y: 0 },
-			{ family: "elec", type: "in", x: 40, y: 0 }
+			{ family: "aes", type: "in", x: 25, y: 0, i: 0 },
+			{ family: "aes", type: "out", x: 30, y: 0, i: 0 },
+			{ family: "elec", type: "in", x: 40, y: 0, i: 0 }
 		]
 	},
 	{
@@ -179,12 +179,12 @@ const SVG_LIBRARY = [
 			"elec": { "in": 1, "out": 5 }
 		},
 		"fixedAnchors": [
-			{ family: "elec", type: "in", x: 4, y: 30 },
-			{ family: "elec", type: "out", x: 0, y: 5 },
-			{ family: "elec", type: "out", x: 0, y: 10 },
-			{ family: "elec", type: "out", x: 0, y: 15 },
-			{ family: "elec", type: "out", x: 0, y: 20 },
-			{ family: "elec", type: "out", x: 0, y: 25 }
+			{ family: "elec", type: "in", x: 4, y: 30, i: 0 },
+			{ family: "elec", type: "out", x: 0, y: 5, i: 0 },
+			{ family: "elec", type: "out", x: 0, y: 10, i: 1 },
+			{ family: "elec", type: "out", x: 0, y: 15, i: 2 },
+			{ family: "elec", type: "out", x: 0, y: 20, i: 3 },
+			{ family: "elec", type: "out", x: 0, y: 25, i: 4 }
 		]
 	},
 	{
@@ -209,10 +209,10 @@ const SVG_LIBRARY = [
 			"elec": { "in": 1, "out": 1 }
 		},
 		"fixedAnchors": [
-			{ family: "dmx", type: "in", x: 0, y: 7 },
-			{ family: "dmx", type: "out", x: 100, y: 7 },
-			{ family: "elec", type: "in", x: 0, y: 0 },
-			{ family: "elec", type: "out", x: 100, y: 0 }
+			{ family: "dmx", type: "in", x: 0, y: 7, i: 0 },
+			{ family: "dmx", type: "out", x: 100, y: 7, i: 0 },
+			{ family: "elec", type: "in", x: 0, y: 0, i: 0 },
+			{ family: "elec", type: "out", x: 100, y: 0, i: 0 }
 		]
 	},
 	{
@@ -226,10 +226,10 @@ const SVG_LIBRARY = [
 			"elec": { "in": 1, "out": 1 }
 		},
 		"fixedAnchors": [
-			{ family: "dmx", type: "in", x: 0, y: 12.5 },
-			{ family: "dmx", type: "out", x: 25, y: 12.5 },
-			{ family: "elec", type: "in", x: 0, y: 0 },
-			{ family: "elec", type: "out", x: 25, y: 0 }
+			{ family: "dmx", type: "in", x: 0, y: 12.5, i: 0 },
+			{ family: "dmx", type: "out", x: 25, y: 12.5, i: 0 },
+			{ family: "elec", type: "in", x: 0, y: 0, i: 0 },
+			{ family: "elec", type: "out", x: 25, y: 0, i: 0 }
 		]
 	},
 	{
@@ -242,8 +242,8 @@ const SVG_LIBRARY = [
 			"dmx": { "in": 1, "out": 1 }
 		},
 		"fixedAnchors": [
-			{ family: "dmx", type: "in", x: 6, y: 4 },
-			{ family: "dmx", type: "out", x: 0, y: 4 }
+			{ family: "dmx", type: "in", x: 6, y: 4 , i: 0},
+			{ family: "dmx", type: "out", x: 0, y: 4, i: 0 }
 		]
 	},
 	{
@@ -256,7 +256,7 @@ const SVG_LIBRARY = [
 			"dmx": { "in": 1, "out": 0 }
 		},
 		"fixedAnchors": [
-			{ family: "dmx", type: "in", x: 10, y: 1.5 }
+			{ family: "dmx", type: "in", x: 10, y: 1.5, i: 0 }
 		]
 	},
 ];

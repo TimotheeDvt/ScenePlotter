@@ -462,7 +462,7 @@ if (typeof SVG_LIBRARY !== 'undefined') {
 		const title = document.createElement('div'); title.className = 'category-title'; title.innerText = catName;
 		const grid = document.createElement('div'); grid.className = 'bank-grid';
 
-		if (["electricity", "audio"].includes(catName.toLowerCase())) {
+		if (["electricity", "audio", "lights"].includes(catName.toLowerCase())) {
 			title.classList.add('collapsed');
 			grid.classList.add('collapsed');
 		}

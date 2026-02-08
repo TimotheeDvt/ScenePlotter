@@ -135,7 +135,8 @@ const SVG_LIBRARY = [
 		"connections": {
 			"xlr": { "in": 32, "out": 16 },
 			"elec" : { "in": 1, "out": 0 },
-			"aes" : { "in": 2, "out": 0 }
+			"aes" : { "in": 2, "out": 0 },
+			"MULTI": { "in": 1, "out": 0 }
 		}
 	},
 	{
@@ -166,6 +167,17 @@ const SVG_LIBRARY = [
 		"connections": {
 			"xlr": { "in": 0, "out": 1 },
 			"jack": { "in": 1, "out": 0 }
+		}
+	},
+	{
+		"name": "Multipair",
+		"path": "multipaire",
+		"category": "Audio",
+		"width": 30,
+		"height": 50,
+		"connections": {
+			"xlr": { "in": 24, "out": 8 },
+			"MULTI": { "in": 0, "out": 1 }
 		}
 	},
 	// Electricity
@@ -266,5 +278,6 @@ const CABLE_FAMILIES = {
 	jack: { label: "Jack", color: "#000000", types: ["in", "out"], lengths: [2, 3, 6] },
 	elec: { label: "Electricity", color: "#FFFFFF", types: ["in", "out"], lengths: [2, 3, 6] },
 	aes: { label: "AES", color: "#FF0000", types: ["in", "out"], lengths: [2, 3, 6] },
-	dmx: { label: "DMX", color: "#800080", types: ["in", "out"], lengths: [2, 3, 6] }
+	dmx: { label: "DMX", color: "#800080", types: ["in", "out"], lengths: [2, 3, 6] },
+	MULTI: { label: "MULTI", color: "#00ff00", types: ["in", "out"], lengths: [2, 3, 6] }
 };

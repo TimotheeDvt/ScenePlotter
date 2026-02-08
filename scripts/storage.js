@@ -263,6 +263,7 @@ function exportGearList() {
 
 	cables.forEach(c => {
 		const familyConfig = CABLE_FAMILIES[c.family];
+		if (!familyConfig || familyConfig.label == "MULTI") return;
 		const actualLengthCm = (c.length || calculateCableLength(c)) / PX_PER_CM;
 		let finalLength = actualLengthCm;
 		if (familyConfig && familyConfig.lengths) {

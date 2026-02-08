@@ -45,7 +45,6 @@
 We are constantly improving ScenePlotter to meet professional standards. The following features are currently under development:
 
 - **Cable Length Constraints**: Set physical limits on cable lengths to ensure the design remains realistic for the available inventory.
-- **Lighting Integration**: Addition of lighting fixtures (Pars, Movers, LED Bars) and dedicated DMX signal management.
 - **Make Ctrl + Z/Y finally work**
 
 ## License

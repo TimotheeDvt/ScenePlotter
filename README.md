@@ -2,6 +2,8 @@
 
 **ScenePlotter** (ProStage Plotter) is a web-based technical drawing tool designed for live sound engineers, stage managers, and event technicians. It allows users to create precise stage plots, manage equipment placement, and visualize complex cabling systems (XLR, Jack, Power, AES, DMX) with real-world scale accuracy.
 
+**[Open Here](https://timotheedvt.github.io/ScenePlotter/)**
+
 ## Key Features
 
 - **Scalable Stage Canvas**: Define custom stage dimensions in centimeters and work on a grid-snapped interface.

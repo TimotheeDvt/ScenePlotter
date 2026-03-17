@@ -24,10 +24,12 @@
                 <label style="margin:0; font-size: 10px;">Toggle ortho</label>
                 <label class="switch">
                     <input type="checkbox" id="orthoToggle" onchange="isOrtho = this.checked; updateAllCables();" checked>
-                    <span class="slider"></span>
+                    <span class="slider tooltip">
+                        <span class="tooltiptextR">Ctrl+O</span>
+                    </span>
                 </label>
             </div>
-            <button onclick="saveStage()">Save .stage</button>
+            <button onclick="saveStage()" class="tooltip" style="position: relative;"><span class="tooltiptextR">Ctrl+S</span>Save .stage</button>
             <button style="background:#444" onclick="document.getElementById('loadInput').click()">Load .stage</button>
             <input type="file" id="loadInput" style="display:none" onchange="loadStage(event)" accept=".stage">
             <button style="background:#007acc" onclick="addNewNote()">Add a note</button>
@@ -100,7 +102,8 @@
                 </label>
             </div>
             <div id="groups-toggles-container" class="panel" style="background: #1e1e1e;"> </div>
-            <button style="background:#555; margin-top:10px" onclick="centerStage()">Center stage</button>
+            <button style="background:#555; margin-top:10px; position: relative;" onclick="centerStage()" class="tooltip">
+                <span class="tooltiptextL">Ctrl+E</span>Center stage</button>
             <button style="background:#27ae60" onclick="exportScene('png')">Export to PNG</button>
             <button style="background:#8e44ad" onclick="exportGearList()">Export Gear List (.txt)</button>
         </div>

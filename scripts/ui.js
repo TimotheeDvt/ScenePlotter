@@ -149,7 +149,7 @@ function deselectAll() {
 		c.line.strokeWidth(40);
 		if (c.handlesGroup) c.handlesGroup.visible(false);
 	});
-	document.getElementById('canvas-props').style.display = 'block';
+	document.getElementById('canvas-props').style.display = 'flex';
 	document.getElementById('gear-props').style.display = 'none';
 	document.getElementById('cable-props').style.display = 'none';
 	document.getElementById('selection-actions').style.display = 'none';
